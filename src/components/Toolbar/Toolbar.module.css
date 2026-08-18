@@ -1,0 +1,258 @@
+.panel {
+  width: 280px;
+  flex-shrink: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 20px 16px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text-primary);
+  margin-bottom: 24px;
+}
+
+.brandMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: var(--accent);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.section {
+  margin-bottom: 22px;
+}
+
+.sectionTitle {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  margin: 0 0 10px;
+}
+
+.sectionHint {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 8px 0 0;
+  line-height: 1.5;
+}
+
+.primaryButton {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.primaryButton:hover {
+  filter: brightness(1.1);
+}
+
+.secondaryButton {
+  width: 100%;
+  margin-top: 8px;
+  padding: 9px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.secondaryButton:hover {
+  background: var(--surface-sunken);
+}
+
+.secondaryButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.destructiveButton {
+  border-color: var(--danger-border);
+  background: var(--danger-bg);
+  color: var(--danger-text);
+}
+
+.destructiveButton:hover {
+  background: var(--danger-bg);
+}
+
+.errorText {
+  font-size: 12px;
+  color: var(--danger-text);
+  margin: 8px 0 0;
+  line-height: 1.4;
+}
+
+.exportButton {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: none;
+  background: var(--text-primary);
+  color: var(--surface);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.exportButton:hover:not(:disabled) {
+  filter: brightness(1.15);
+}
+
+.exportButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.layoutSwatch,
+.styleSwatch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: var(--surface-raised);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.layoutSwatch:hover,
+.styleSwatch:hover {
+  border-color: var(--accent-border);
+}
+
+.layoutSwatch.active,
+.styleSwatch.active {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.layoutPreview {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  background: var(--surface-sunken);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.layoutSlot {
+  position: absolute;
+  background: var(--text-secondary);
+  border-radius: 1px;
+}
+
+.layoutLabel {
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.styleSwatchBorder {
+  width: 44px;
+  height: 44px;
+  border-radius: 4px;
+  border-width: 6px;
+  border-style: solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.styleSwatchMat {
+  width: 100%;
+  height: 100%;
+  border-radius: 1px;
+}
+
+.cropControls {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.sliderRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.sliderRow input[type='range'] {
+  flex: 1;
+  accent-color: var(--accent);
+}
+
+.buttonRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.buttonRow .secondaryButton {
+  margin-top: 0;
+}
+
+@media (max-width: 860px) {
+  .panel {
+    order: 2;
+    width: 100%;
+    height: auto;
+    max-height: 42vh;
+    border-right: none;
+    border-top: 1px solid var(--border);
+    padding: 14px 16px;
+  }
+
+  .section {
+    margin-bottom: 16px;
+  }
+}
+

@@ -1,0 +1,102 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: min(440px, 88vw);
+}
+
+.dropzone {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 32px;
+  border-radius: 16px;
+  border: 2px dashed var(--border-strong);
+  background: var(--surface-raised);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+}
+
+.dropzone:hover {
+  border-color: var(--accent-border);
+  background: var(--accent-bg);
+}
+
+.dropzone:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.dropzone.active {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  transform: scale(1.01);
+}
+
+.dropzone.errored {
+  border-color: var(--danger-border);
+}
+
+.status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.icon {
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.hint {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.formats {
+  font-size: 11.5px;
+  color: var(--text-tertiary);
+  margin: 8px 0 0;
+  letter-spacing: 0.02em;
+}
+
+.spinner {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  animation: spin 0.7s linear infinite;
+  margin-bottom: 4px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.errorBanner {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  color: var(--danger-text);
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: center;
+}
