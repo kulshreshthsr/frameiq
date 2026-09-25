@@ -19,7 +19,8 @@ interface FrameMouldingProps {
 
 const EDGE_ORDER: MouldingEdgeName[] = ['top', 'right', 'bottom', 'left']
 
-// Light source from the top-left: each edge gets its own outer→inner shade
+// Light source from the top-left (the contact shadow follows the same light —
+// see LIGHT_SHADOW_SKEW in lib/frameGeometry): each edge gets its own outer→inner shade
 // pair so the moulding reads as a raised, bevelled profile rather than a
 // flat rectangle. `contrast` bundles bevelStrength with the wall's sampled
 // ambient brightness — a brighter wall pushes the highlight/shadow split a

@@ -1,25 +1,43 @@
+/*
+ * Design tokens and shared primitives.
+ *
+ * Direction: a premium interior-design brand, not a dashboard — warm paper
+ * tones, near-black ink, one terracotta accent used sparingly, a serif for
+ * headings and the system sans for everything you tap. Flat surfaces and
+ * hairline borders; depth comes from a soft shadow, never from gradients.
+ */
 :root {
-  --surface: #ffffff;
-  --surface-raised: #f7f7f8;
-  --surface-sunken: #eeeef0;
-  --surface-checker: #e2e2e6;
-  --border: #e2e2e6;
-  --border-strong: #c7c7cf;
-  --text-primary: #17171a;
-  --text-secondary: #6b6b74;
-  --text-tertiary: #9a9aa2;
-  --accent: #3a6df0;
-  --accent-bg: rgba(58, 109, 240, 0.1);
-  --accent-border: rgba(58, 109, 240, 0.5);
-  --danger: #d13b3b;
-  --danger-bg: rgba(209, 59, 59, 0.08);
-  --danger-border: rgba(209, 59, 59, 0.4);
-  --danger-text: #a02525;
+  --paper: #f6f2ea;
+  --paper-2: #ece6d9;
+  --card: #fbf9f4;
+  --ink: #211c17;
+  --ink-2: #4f473e;
+  --ink-3: #6b6256;
+  --line: #ddd5c7;
+  --line-strong: #bfb3a0;
+  --accent: #9a4a2a;
+  --accent-soft: #f0e0d5;
+  --ok: #45663a;
+  --danger: #a3362b;
+  --danger-soft: #f7e6e3;
 
-  font: 14px/1.5 system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'URW Palladio L', P052, 'Book Antiqua', Georgia, serif;
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow-soft: 0 1px 2px rgba(33, 28, 23, 0.06), 0 6px 18px rgba(33, 28, 23, 0.08);
+  --shadow-lift: 0 10px 30px rgba(33, 28, 23, 0.16);
+
+  --touch: 48px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  font: 15px/1.5 var(--font-sans);
   color-scheme: light;
-  color: var(--text-primary);
-  background: var(--surface);
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 
 * {
@@ -36,4 +54,225 @@ body,
 
 body {
   overflow: hidden;
+  background: var(--paper);
+  overscroll-behavior: none;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* Keyboard focus is always visible; mouse/touch focus is not distracting. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ------------------------------------------------------------------ buttons */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--touch);
+  padding: 0 22px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  text-align: center;
+  transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btnPrimary {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: #3a322a;
+}
+
+.btnSecondary {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+
+.btnSecondary:hover:not(:disabled) {
+  background: var(--paper-2);
+}
+
+.btnBlock {
+  width: 100%;
+}
+
+.btnCompact {
+  min-height: 40px;
+  padding: 0 16px;
+  font-size: 14px;
+}
+
+.btnText {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 40px;
+  padding: 0 4px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+.btnText:hover:not(:disabled) {
+  text-decoration-thickness: 2px;
+}
+
+.btnText:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ------------------------------------------------------------------ segmented */
+
+.segmented {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--card);
+}
+
+.segmentedBlock {
+  display: flex;
+  width: 100%;
+}
+
+.segmentedBlock > .segment {
+  flex: 1;
+}
+
+.segment {
+  min-height: 42px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-2);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.segment:hover {
+  background: var(--paper-2);
+}
+
+.segmentActive,
+.segmentActive:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* ------------------------------------------------------------------ text */
+
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.hint {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.fieldError {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--danger);
+}
+
+/* A horizontally scrolling row that feels native on touch and hides its
+ * scrollbar; used for layout and frame pickers on narrow screens. */
+.scroller {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding: 2px 16px 6px;
+  margin: 0 -16px;
+}
+
+.scroller::-webkit-scrollbar {
+  display: none;
+}
+
+.scroller > * {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }

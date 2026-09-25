@@ -1,5 +1,5 @@
 import type { LayoutDefinition, LayoutSlot } from '../types/frame'
-import { DEFAULT_FRAME_STYLE_ID } from './frameStyles'
+import { DEFAULT_PRODUCT_ID } from '../domain/catalog'
 
 interface GridOptions {
   frameWidthPct: number
@@ -42,7 +42,7 @@ export const LAYOUTS: LayoutDefinition[] = [
     name: 'Single Hero Frame',
     description: 'One large statement frame, centered on the wall.',
     allowedOrientation: 'any',
-    defaultStyleId: DEFAULT_FRAME_STYLE_ID,
+    defaultProductId: DEFAULT_PRODUCT_ID,
     spacing: 'normal',
     slots: [{ id: 'a', xPct: 0.5, yPct: 0.5, wPct: 0.36, hPct: 0.5 }],
   },
@@ -51,7 +51,7 @@ export const LAYOUTS: LayoutDefinition[] = [
     name: 'Two Horizontal Frames',
     description: 'A pair of frames side by side.',
     allowedOrientation: 'landscape',
-    defaultStyleId: 'walnut',
+    defaultProductId: 'walnut',
     spacing: 'normal',
     slots: generateGridSlots(1, 2, { frameWidthPct: 0.24, frameHeightPct: 0.36, gapXPct: 0.06, gapYPct: 0 }),
   },
@@ -60,7 +60,7 @@ export const LAYOUTS: LayoutDefinition[] = [
     name: 'Two Vertical Frames',
     description: 'A pair of frames stacked top to bottom.',
     allowedOrientation: 'portrait',
-    defaultStyleId: 'walnut',
+    defaultProductId: 'walnut',
     spacing: 'normal',
     slots: generateGridSlots(2, 1, { frameWidthPct: 0.26, frameHeightPct: 0.24, gapXPct: 0, gapYPct: 0.06 }),
   },
@@ -69,7 +69,7 @@ export const LAYOUTS: LayoutDefinition[] = [
     name: 'Three Frame Minimal',
     description: 'Three equal frames in a clean, evenly spaced row.',
     allowedOrientation: 'landscape',
-    defaultStyleId: 'matte-black',
+    defaultProductId: 'matte-black',
     spacing: 'tight',
     slots: generateGridSlots(1, 3, { frameWidthPct: 0.17, frameHeightPct: 0.26, gapXPct: 0.045, gapYPct: 0 }),
   },
@@ -78,7 +78,7 @@ export const LAYOUTS: LayoutDefinition[] = [
     name: 'Three Frame Classic',
     description: 'A traditional triptych — larger center frame flanked by two smaller ones.',
     allowedOrientation: 'landscape',
-    defaultStyleId: 'natural-oak',
+    defaultProductId: 'natural-oak',
     spacing: 'normal',
     slots: [
       { id: 'center', xPct: 0.5, yPct: 0.5, wPct: 0.22, hPct: 0.34 },
@@ -91,7 +91,7 @@ export const LAYOUTS: LayoutDefinition[] = [
     name: 'Five Frame Wedding',
     description: 'A romantic salon-style collage of five frames with gentle tilts.',
     allowedOrientation: 'any',
-    defaultStyleId: 'white',
+    defaultProductId: 'white',
     spacing: 'relaxed',
     slots: [
       { id: 'a', xPct: 0.5, yPct: 0.46, wPct: 0.24, hPct: 0.34 },
@@ -106,7 +106,7 @@ export const LAYOUTS: LayoutDefinition[] = [
     name: 'Six Frame Family',
     description: 'A tidy 2×3 family wall grid.',
     allowedOrientation: 'any',
-    defaultStyleId: 'dark-brown',
+    defaultProductId: 'dark-brown',
     spacing: 'normal',
     slots: generateGridSlots(2, 3, { frameWidthPct: 0.17, frameHeightPct: 0.24, gapXPct: 0.035, gapYPct: 0.05 }),
   },
@@ -115,7 +115,7 @@ export const LAYOUTS: LayoutDefinition[] = [
     name: 'Nine Frame Grid',
     description: 'A dense, gallery-style 3×3 grid.',
     allowedOrientation: 'any',
-    defaultStyleId: 'matte-black',
+    defaultProductId: 'matte-black',
     spacing: 'tight',
     slots: generateGridSlots(3, 3, { frameWidthPct: 0.14, frameHeightPct: 0.19, gapXPct: 0.025, gapYPct: 0.035 }),
   },
@@ -124,7 +124,7 @@ export const LAYOUTS: LayoutDefinition[] = [
     name: 'Large Center + Four Small',
     description: 'One hero frame with four smaller frames anchoring the corners.',
     allowedOrientation: 'any',
-    defaultStyleId: 'gold',
+    defaultProductId: 'gold',
     spacing: 'relaxed',
     slots: [
       { id: 'center', xPct: 0.5, yPct: 0.5, wPct: 0.26, hPct: 0.38 },
@@ -139,7 +139,7 @@ export const LAYOUTS: LayoutDefinition[] = [
     name: 'Asymmetrical Gallery',
     description: 'An eclectic, irregular gallery-wall mix of sizes and angles.',
     allowedOrientation: 'any',
-    defaultStyleId: 'walnut',
+    defaultProductId: 'walnut',
     spacing: 'relaxed',
     slots: [
       { id: 'big', xPct: 0.34, yPct: 0.44, wPct: 0.22, hPct: 0.32, rotation: -2 },

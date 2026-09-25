@@ -116,13 +116,6 @@ export function computeQuadTiltAngle(quad: Quad): number {
   return Math.atan2((topY + bottomY) / 2, (topX + bottomX) / 2)
 }
 
-export function rotateVector(x: number, y: number, angleRad: number): Point {
-  return {
-    x: x * Math.cos(angleRad) - y * Math.sin(angleRad),
-    y: x * Math.sin(angleRad) + y * Math.cos(angleRad),
-  }
-}
-
 // ---------------------------------------------------------------------------
 // Wall-surface (Mode B) mapping
 // ---------------------------------------------------------------------------
@@ -153,31 +146,45 @@ export function computeRegionDimensions(region: Quad): { width: number; height: 
   return { width: (topLen + bottomLen) / 2, height: (leftLen + rightLen) / 2 }
 }
 
-/** A layout slot's four corners in the same normalized [0,1] space its
- * xPct/yPct/wPct/hPct already live in — i.e. before any homography is
- * applied. Any slot-level decorative rotation (collage tilt) is baked in
- * here so it composes naturally with the wall's own perspective. */
-export function computeSlotCornersInUnitSpace(
-  xPct: number,
-  yPct: number,
-  wPct: number,
-  hPct: number,
+/**
+ * A frame's four corners in the wall region's normalized [0,1] unit space —
+ * i.e. before any homography is applied. Any tilt (a collage layout's gentle
+ * rotation) is baked in here so it composes naturally with the wall's own
+ * perspective.
+ *
+ * The rotation is done in HEAD-ON PIXEL space, then normalized. Rotating
+ * directly in unit space would be wrong whenever the region isn't square:
+ * unit x and unit y span different pixel lengths, so a rotation there
+ * shears the frame into a parallelogram and turns a 4° tilt into some other
+ * angle. Rotating first, in a space where a pixel is a pixel in both
+ * directions, keeps the frame a true rectangle at exactly the requested tilt.
+ *
+ * @param center     the frame's centre in unit space
+ * @param regionSize the region's head-on size in pixels (see computeRegionDimensions)
+ */
+export function computeRectCornersInUnitSpace(
+  center: Point,
+  widthPx: number,
+  heightPx: number,
   rotationDeg: number,
+  regionSize: { width: number; height: number },
 ): Quad {
-  const hw = wPct / 2
-  const hh = hPct / 2
+  const hw = widthPx / 2
+  const hh = heightPx / 2
   const rad = (rotationDeg * Math.PI) / 180
   const cos = Math.cos(rad)
   const sin = Math.sin(rad)
-  const rotate = (px: number, py: number): Point => ({
-    x: xPct + px * cos - py * sin,
-    y: yPct + px * sin + py * cos,
+  const cx = center.x * regionSize.width
+  const cy = center.y * regionSize.height
+  const toUnit = (px: number, py: number): Point => ({
+    x: regionSize.width > 0 ? (cx + px * cos - py * sin) / regionSize.width : center.x,
+    y: regionSize.height > 0 ? (cy + px * sin + py * cos) / regionSize.height : center.y,
   })
   return {
-    topLeft: rotate(-hw, -hh),
-    topRight: rotate(hw, -hh),
-    bottomRight: rotate(hw, hh),
-    bottomLeft: rotate(-hw, hh),
+    topLeft: toUnit(-hw, -hh),
+    topRight: toUnit(hw, -hh),
+    bottomRight: toUnit(hw, hh),
+    bottomLeft: toUnit(-hw, hh),
   }
 }
 

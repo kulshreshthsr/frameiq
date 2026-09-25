@@ -1,105 +1,128 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useCompositionStore } from '../../../state/compositionStore'
 import { useUIStore } from '../../../state/uiStore'
 import { useJourneyStore } from '../../../state/journeyStore'
-import { validateAndLoadImage } from '../../../lib/validateAndLoadImage'
+import { usePhotoUpload } from '../../../hooks/usePhotoUpload'
 import { ACCEPTED_IMAGE_TYPES } from '../../../lib/constants'
-import { StepFooterNav } from '../StepFooterNav'
-import { PhotoCropControls } from '../../Toolbar/PhotoCropControls'
-import toolbarStyles from '../../Toolbar/Toolbar.module.css'
+import { frameName } from '../../../lib/frameLabels'
+import { PanelShell, StepFooter } from '../PanelShell'
+import { FrameStrip } from '../../shared/FrameStrip'
+import { PhotoQualityNote } from '../../shared/PhotoQualityNote'
 import styles from '../Journey.module.css'
 
 export function Step3Photos() {
   const frames = useCompositionStore((s) => s.frames)
-  const setFramePhoto = useCompositionStore((s) => s.setFramePhoto)
   const addFrame = useCompositionStore((s) => s.addFrame)
   const removeFrame = useCompositionStore((s) => s.removeFrame)
+  const autoFitPhoto = useCompositionStore((s) => s.autoFitPhoto)
+  const rotatePhoto90 = useCompositionStore((s) => s.rotatePhoto90)
+  const configureFrames = useCompositionStore((s) => s.configureFrames)
   const selectedFrameId = useUIStore((s) => s.selectedFrameId)
   const selectFrame = useUIStore((s) => s.selectFrame)
+  const openCropEditor = useUIStore((s) => s.openCropEditor)
   const goToStep = useJourneyStore((s) => s.goToStep)
   const advanceTo = useJourneyStore((s) => s.advanceTo)
-
-  const photoInputRef = useRef<HTMLInputElement | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { addPhotos, isLoading } = usePhotoUpload()
+  const fileInput = useRef<HTMLInputElement | null>(null)
 
   const selectedFrame = frames.find((f) => f.id === selectedFrameId)
+  const selectedIndex = selectedFrame ? frames.indexOf(selectedFrame) : -1
   const photosAdded = frames.filter((f) => f.photo).length
-  const frameIndex = selectedFrame ? frames.findIndex((f) => f.id === selectedFrame.id) : -1
+  const emptyCount = frames.length - photosAdded
 
-  const handlePhotoFile = async (file: File) => {
-    if (!selectedFrameId) return
-    setError(null)
-    setIsLoading(true)
-    try {
-      const asset = await validateAndLoadImage(file)
-      setFramePhoto(selectedFrameId, asset)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'That photo could not be loaded.')
-    } finally {
-      setIsLoading(false)
-    }
+  // Arriving here with nothing selected, start on the first empty frame so
+  // "Add photo" is immediately the obvious thing to do.
+  useEffect(() => {
+    const state = useCompositionStore.getState()
+    if (useUIStore.getState().selectedFrameId) return
+    const first = state.frames.find((f) => !f.photo) ?? state.frames[0]
+    if (first) useUIStore.getState().selectFrame(first.id)
+  }, [])
+
+  const handleFiles = (list: FileList | null) => {
+    const files = list ? Array.from(list) : []
+    void addPhotos(files, selectedFrameId)
+  }
+
+  const leave = (action: () => void) => {
+    selectFrame(null)
+    action()
   }
 
   return (
-    <>
-      <div className={styles.content}>
-        <h2 className={styles.title}>Add your photos</h2>
-        <div className={styles.progressNote}>
-          <span className={`${styles.progressDot} ${photosAdded === frames.length ? '' : styles.progressDotDone}`} />
-          {photosAdded} of {frames.length} photos added
-        </div>
+    <PanelShell
+      step={3}
+      title="Add your photos"
+      subtitle={`${photosAdded} of ${frames.length} photo${frames.length === 1 ? '' : 's'} added. Tap a frame to choose its photo.`}
+      backLabel="Layout"
+      onBack={() => leave(() => goToStep(2))}
+      footer={<StepFooter primaryLabel="Choose frames" onPrimary={() => leave(() => advanceTo(4))} />}
+    >
+      <div className={styles.stack}>
+        <FrameStrip frames={frames} selectedId={selectedFrameId} onSelect={selectFrame} />
+
+        <input
+          ref={fileInput}
+          type="file"
+          accept={ACCEPTED_IMAGE_TYPES.join(',')}
+          multiple
+          hidden
+          aria-label="Choose photos"
+          data-testid="photo-input"
+          onChange={(e) => {
+            handleFiles(e.target.files)
+            e.target.value = ''
+          }}
+        />
 
         {selectedFrame ? (
-          <div className={styles.selectedFrameCard}>
-            <p className={styles.selectedFrameCardTitle}>Frame {frameIndex + 1} selected</p>
-            <input
-              ref={photoInputRef}
-              type="file"
-              accept={ACCEPTED_IMAGE_TYPES.join(',')}
-              hidden
-              onChange={(e) => {
-                const file = e.target.files?.[0]
-                e.target.value = ''
-                if (file) handlePhotoFile(file)
-              }}
-            />
+          <div className={styles.card} data-testid="selected-frame-card">
+            <p className={styles.cardTitle}>{frameName(selectedIndex)}</p>
             <button
               type="button"
-              className={toolbarStyles.primaryButton}
-              onClick={() => photoInputRef.current?.click()}
+              className="btn btnPrimary btnBlock"
+              onClick={() => fileInput.current?.click()}
               disabled={isLoading}
+              data-testid="add-photo"
             >
-              {isLoading ? 'Loading…' : selectedFrame.photo ? 'Replace Photo' : 'Add Photo'}
+              {isLoading ? 'Adding…' : selectedFrame.photo ? 'Replace photo' : emptyCount > 1 ? 'Add photos' : 'Add photo'}
             </button>
-            {error && <p className={toolbarStyles.errorText}>{error}</p>}
-            {selectedFrame.photo && <PhotoCropControls frame={selectedFrame} />}
-            <button
-              type="button"
-              className={toolbarStyles.secondaryButton}
-              onClick={() => removeFrame(selectedFrame.id)}
-            >
-              Remove this frame
-            </button>
+            {!selectedFrame.photo && emptyCount > 1 && (
+              <p className={styles.hint}>Choose several at once and we’ll fill your empty frames in order.</p>
+            )}
+
+            {selectedFrame.photo && (
+              <>
+                <div className={styles.buttonRow}>
+                  <button type="button" className="btn btnSecondary btnCompact" onClick={() => openCropEditor(selectedFrame.id)} data-testid="adjust-photo">
+                    Adjust
+                  </button>
+                  <button type="button" className="btn btnSecondary btnCompact" onClick={() => rotatePhoto90(selectedFrame.id, 1)}>
+                    Rotate
+                  </button>
+                  <button type="button" className="btn btnSecondary btnCompact" onClick={() => autoFitPhoto(selectedFrame.id)}>
+                    Reset
+                  </button>
+                </div>
+                <PhotoQualityNote frame={selectedFrame} onUseSize={(sizeId) => configureFrames(selectedFrame.id, { sizeId })} />
+              </>
+            )}
           </div>
         ) : (
-          <p className={styles.hint}>Click any frame on your wall to add or change its photo.</p>
+          <p className={styles.hint}>Choose a frame above to add its photo.</p>
         )}
 
-        <button type="button" className={toolbarStyles.secondaryButton} onClick={addFrame}>
-          + Add another frame
-        </button>
+        <div className={styles.buttonRow}>
+          <button type="button" className="btn btnSecondary btnCompact" onClick={addFrame}>
+            + Add a frame
+          </button>
+          {selectedFrame && frames.length > 1 && (
+            <button type="button" className="btn btnSecondary btnCompact" onClick={() => removeFrame(selectedFrame.id)}>
+              Remove {frameName(selectedIndex)}
+            </button>
+          )}
+        </div>
       </div>
-      <StepFooterNav
-        onBack={() => {
-          selectFrame(null)
-          goToStep(2)
-        }}
-        onContinue={() => {
-          selectFrame(null)
-          advanceTo(4)
-        }}
-      />
-    </>
+    </PanelShell>
   )
 }

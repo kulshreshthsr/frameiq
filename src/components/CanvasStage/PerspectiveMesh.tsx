@@ -12,7 +12,7 @@ interface PerspectiveMeshProps {
 // Each cell is drawn slightly larger than its nominal unit square so
 // neighbouring tiles overlap by a hair instead of leaving a hairline gap —
 // otherwise each tile's own edge anti-aliasing shows up as a visible seam.
-const OVERSCAN = 0.015
+const OVERSCAN = 0.06
 
 // A freeform four-corner drag (e.g. the perspective debug tool) can produce
 // a degenerate or self-intersecting quad where applyHomography's w

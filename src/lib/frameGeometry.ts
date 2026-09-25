@@ -23,14 +23,25 @@ export interface ContactShadowLayers {
 }
 
 /**
+ * The scene's single light direction: from above and a little to the left.
+ * The moulding's bevel shading (FrameMoulding: bright top/left, dark
+ * bottom/right) and the contact shadow both derive from this, so they always
+ * agree. The shadow therefore falls down AND to the right; `LIGHT_SHADOW_SKEW`
+ * is how far right it drifts per unit of downward offset (0 = light directly
+ * overhead, 1 = light at 45°). The bevel is lit mostly from above, so this
+ * stays well under 1.
+ */
+export const LIGHT_SHADOW_SKEW = 0.4
+
+/**
  * Two stacked shadow passes approximating a soft contact shadow: a tight
  * pass hugging the frame's edge plus a wider, fainter pass for the ambient
  * falloff — stronger near the frame, fading outward, rather than a single
  * flat offset blur. The offset is deliberately small and stays in wall-space
  * (not rotated with the frame's own tilt): a picture tilted on the wall
- * still has its shadow fall roughly straight down in the room, not rotated
- * to follow the frame. A thicker physical moulding (physicalThicknessRatio)
- * stands further off the wall and casts a slightly longer, softer shadow.
+ * still has its shadow fall the same way in the room, not rotated to follow
+ * the frame. A thicker physical moulding (physicalThicknessRatio) stands
+ * further off the wall and casts a slightly longer, softer shadow.
  *
  * lightingFactor (default 1, from the wall's sampled ambient brightness)
  * only nudges opacity within a tight band — a lighting *response*, not a
@@ -43,17 +54,19 @@ export function computeContactShadowLayers(
 ): ContactShadowLayers {
   const lift = refDim * style.physicalThicknessRatio * style.shadowStrength
   const opacityFactor = clamp(1 + (lightingFactor - 1) * 0.4, 0.75, 1.15)
+  const tightDrop = clamp(lift * 0.35, 1, 6)
+  const softDrop = clamp(lift * 0.9, 3, 20)
   return {
     tight: {
       blur: clamp(refDim * 0.012 * style.shadowStrength, 1.5, 8),
-      offsetX: 0,
-      offsetY: clamp(lift * 0.35, 1, 6),
+      offsetX: tightDrop * LIGHT_SHADOW_SKEW,
+      offsetY: tightDrop,
       opacity: clamp(0.38 * opacityFactor, 0.15, 0.5),
     },
     soft: {
       blur: clamp(refDim * 0.05 * style.shadowStrength, 8, 40),
-      offsetX: 0,
-      offsetY: clamp(lift * 0.9, 3, 20),
+      offsetX: softDrop * LIGHT_SHADOW_SKEW,
+      offsetY: softDrop,
       opacity: clamp(0.16 * opacityFactor, 0.05, 0.24),
     },
   }

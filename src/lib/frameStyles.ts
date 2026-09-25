@@ -99,8 +99,6 @@ export const FRAME_STYLES: FrameStyleConfig[] = [
   },
 ]
 
-export const DEFAULT_FRAME_STYLE_ID = FRAME_STYLES[0].id
-
 export function getFrameStyle(id: string): FrameStyleConfig {
   return FRAME_STYLES.find((style) => style.id === id) ?? FRAME_STYLES[0]
 }

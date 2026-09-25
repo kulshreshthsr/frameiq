@@ -1,192 +1,465 @@
+/* The step panel: a side panel on desktop, a bottom sheet on phones. */
+
 .panel {
-  width: 320px;
-  flex-shrink: 0;
-  height: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--surface);
-  border-left: 1px solid var(--border);
-  box-sizing: border-box;
+  min-height: 0;
+  background: var(--card);
+  border-left: 1px solid var(--line);
 }
 
-@media (max-width: 860px) {
-  .panel {
-    order: 2;
-    width: 100%;
-    height: auto;
-    max-height: 46vh;
-    border-left: none;
-    border-top: 1px solid var(--border);
-  }
-
-  .content {
-    padding: 18px 18px 14px;
-  }
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 48px;
+  padding: 4px 24px 0;
+  flex: none;
 }
 
-.content {
+.stepCount {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.body {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  padding: 28px 24px 20px;
+  overscroll-behavior: contain;
+  padding: 4px 24px 24px;
 }
 
 .title {
-  font-size: 20px;
+  font-family: var(--font-serif);
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+
+.title:focus {
+  outline: none;
+}
+
+.subtitle {
+  margin-top: 8px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.content {
+  margin-top: 22px;
+}
+
+.foot {
+  flex: none;
+  padding: 14px 24px calc(14px + var(--safe-bottom));
+  border-top: 1px solid var(--line);
+  background: var(--card);
+}
+
+.footerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.footerRow :global(.btn) {
+  flex: none;
+  min-width: 170px;
+}
+
+/* ------------------------------------------------------------ layout */
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.section > * {
+  max-width: 100%;
+}
+
+.sectionTitle {
+  font-size: 13px;
   font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 6px;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.sectionScope {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--ink-3);
 }
 
 .hint {
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.5;
-  color: var(--text-secondary);
-  margin: 0 0 20px;
+  color: var(--ink-2);
 }
 
-.footerNav {
-  display: flex;
-  gap: 10px;
-  padding: 16px 24px;
-  border-top: 1px solid var(--border);
-}
-
-.footerNav .back {
-  flex: 0 0 auto;
-  width: auto;
-  margin-top: 0;
-}
-
-.footerNav .continue {
-  flex: 1;
-  width: auto;
-  margin-top: 0;
-}
-
-.linkButton {
-  background: none;
-  border: none;
-  padding: 0;
+.fineprint {
   font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
+.statusOk {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ok);
   font-weight: 600;
-  color: var(--accent);
-  cursor: pointer;
-  text-decoration: none;
 }
 
-.linkButton:hover {
-  text-decoration: underline;
+.noteBox {
+  padding: 12px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--paper);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink-2);
 }
 
-.progressNote {
+.buttonRow {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  margin-bottom: 16px;
 }
 
-.progressDot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--accent);
-  flex-shrink: 0;
-}
-
-.progressDotDone {
-  background: var(--text-tertiary);
-}
-
-.selectedFrameCard {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px;
-  margin-bottom: 16px;
-  background: var(--surface-raised);
-}
-
-.selectedFrameCardTitle {
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-secondary);
-  margin: 0 0 10px;
-}
-
-.emptyStateHint {
+.card {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 8px;
-  padding: 28px 16px;
-  border: 1.5px dashed var(--border-strong);
-  border-radius: 12px;
-  color: var(--text-secondary);
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.cardTitle {
   font-size: 13px;
-  margin-bottom: 16px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
 }
 
-.priceList {
+.cardName {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--ink);
+  text-align: left;
+}
+
+.cardMeta {
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
+/* One rule for every selectable card/option: the chosen one is outlined in
+ * ink with a second ring, so selection never relies on colour alone. */
+.cardActive,
+.cardActive:hover {
+  border-color: var(--ink) !important;
+  box-shadow: 0 0 0 1px var(--ink);
+  background: #fff !important;
+}
+
+/* ------------------------------------------------------------ wall step */
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stepperButton {
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--card);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.stepperButton:hover {
+  background: var(--paper-2);
+}
+
+.stepperField {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  min-width: 140px;
+  padding: 0 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink-3);
+  font-size: 14px;
+}
+
+.stepperField:focus-within {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 1px var(--ink);
+}
+
+.stepperField input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.stepperField input[aria-invalid='true'] {
+  color: var(--danger);
+}
+
+/* ------------------------------------------------------------ layouts */
+
+.layoutList {
+  padding-bottom: 8px;
+}
+
+.layoutCard {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  margin-bottom: 16px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  align-items: flex-start;
+  gap: 6px;
+  width: 132px;
+  padding: 8px 8px 10px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  text-align: left;
+  transition: border-color 0.15s ease;
+}
+
+.layoutCard:hover {
+  border-color: var(--line-strong);
+}
+
+.layoutPreview {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 5px;
+  background: var(--paper-2);
   overflow: hidden;
 }
 
-.priceRow {
+.layoutSlot {
+  position: absolute;
+  border: 1.5px solid var(--ink-2);
+  background: #fff;
+  border-radius: 1px;
+}
+
+/* ------------------------------------------------------------ frames */
+
+.productList {
+  padding-bottom: 8px;
+}
+
+.productCard {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 128px;
+  padding: 8px 8px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  text-align: left;
+  transition: border-color 0.15s ease;
+}
+
+.productCard:hover {
+  border-color: var(--line-strong);
+}
+
+.productSwatch {
+  display: flex;
   align-items: center;
-  padding: 12px 14px;
-  font-size: 13px;
-  color: var(--text-primary);
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
+  justify-content: center;
+  width: 100%;
+  padding: 4px 0 6px;
+  border-radius: 6px;
+  background: var(--paper-2);
+  line-height: 0;
 }
 
-.priceRow:last-child {
-  border-bottom: none;
+/* ------------------------------------------------------------ size */
+
+.sizeGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
 }
 
-.priceRowMuted {
-  color: var(--text-tertiary);
+.sizeButton {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  column-gap: 8px;
+  align-items: center;
+  min-height: 60px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  text-align: left;
+  transition: border-color 0.15s ease;
 }
 
-.totalRow {
+.sizeButton:hover {
+  border-color: var(--line-strong);
+}
+
+.sizeMain {
+  grid-column: 1;
+  grid-row: 1;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.sizeSub {
+  grid-column: 1;
+  grid-row: 2;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.sizePrice {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.inlineField {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  padding: 16px 14px;
-  border-radius: 10px;
-  background: var(--text-primary);
-  color: var(--surface);
-  margin-bottom: 10px;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
 }
 
-.totalLabel {
+.fieldLabel {
   font-size: 13px;
   font-weight: 600;
-  opacity: 0.75;
+  color: var(--ink-2);
 }
 
-.totalAmount {
-  font-size: 26px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+.inlineField :global(.segmented) {
+  width: 100%;
 }
 
-.disclaimer {
-  font-size: 11.5px;
-  color: var(--text-tertiary);
-  line-height: 1.5;
-  margin: 0 0 8px;
+.inlineField :global(.segment) {
+  flex: 1;
+  padding: 0 10px;
+  font-size: 13.5px;
+}
+
+/* ------------------------------------------------------------ phones */
+
+@media (max-width: 999px) {
+  .panel {
+    border-left: none;
+    border-top: 1px solid var(--line);
+    /* Leaves the wall photo the majority of the screen; the sheet scrolls. */
+    max-height: min(52dvh, 480px);
+    box-shadow: 0 -8px 24px rgba(33, 28, 23, 0.08);
+  }
+
+  .head {
+    min-height: 40px;
+    padding: 2px 16px 0;
+  }
+
+  .body {
+    padding: 0 16px 16px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .subtitle {
+    margin-top: 6px;
+    font-size: 14px;
+  }
+
+  .content {
+    margin-top: 16px;
+  }
+
+  .foot {
+    padding: 10px 16px calc(10px + var(--safe-bottom));
+  }
+
+  .footerRow :global(.btn) {
+    min-width: 150px;
+  }
+
+  .stack {
+    gap: 20px;
+  }
+}
+
+@media (max-width: 360px) {
+  .footerRow :global(.btn) {
+    min-width: 128px;
+    padding: 0 14px;
+  }
+}
+
+/* Desktop shows layouts and frame styles as a grid instead of a strip. */
+@media (min-width: 1000px) {
+  .layoutList,
+  .productList {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    overflow: visible;
+    margin: 0;
+    padding: 2px 0 0;
+  }
+
+  .layoutCard,
+  .productCard {
+    width: auto;
+  }
 }

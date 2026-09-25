@@ -1,87 +1,85 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type Konva from 'konva'
-import { Stage, Layer, Rect, Circle, Line, Transformer } from 'react-konva'
+import { Stage, Layer, Rect } from 'react-konva'
 import { useCompositionStore } from '../../state/compositionStore'
 import { useUIStore } from '../../state/uiStore'
 import { useJourneyStore } from '../../state/journeyStore'
-import { getFrameStyle } from '../../lib/frameStyles'
+import { resolveFrameStyle } from '../../domain/frameStyle'
 import { getLayout } from '../../lib/layouts'
-import { clamp, fitContain } from '../../lib/geometry'
+import { clamp } from '../../lib/geometry'
+import { computeCanvasFit } from '../../lib/canvasFit'
 import { computeDefaultCorners, inflateQuad } from '../../lib/perspective'
-import { validateAndLoadImage } from '../../lib/validateAndLoadImage'
-import { exportStageAsImage } from '../../lib/exportStage'
-import { MAX_ZOOM, MIN_ZOOM } from '../../lib/constants'
+import { describeDesign } from '../../lib/frameLabels'
+import { downloadBlob, exportStageAsImage } from '../../lib/exportStage'
+import type { ExportResult } from '../../lib/exportSafety'
+import { ACCEPTED_IMAGE_TYPES, MAX_ZOOM, MIN_ZOOM } from '../../lib/constants'
 import { useFrameLighting } from '../../hooks/useFrameLighting'
+import { usePhotoUpload } from '../../hooks/usePhotoUpload'
 import { WallBackground } from './WallBackground'
 import { FrameNode } from './FrameNode'
+import { CompareReveal } from './CompareReveal'
 import { PerspectiveHandles } from './PerspectiveHandles'
 import { QuadHandles, QuadConnectorLines } from './QuadHandles'
 import { WallRegionOverlay } from './WallRegionOverlay'
 import { WallRegionHandles } from './WallRegionHandles'
 import { ZoomControls } from './ZoomControls'
-import { WallUploader } from '../WallUploader/WallUploader'
 import styles from './CanvasStage.module.css'
 
-const WALL_SELECTION_STEPS = ['top-left', 'top-right', 'bottom-right', 'bottom-left'] as const
+export interface ExportOutcome {
+  width: number
+  height: number
+  /** True when the saved image is smaller than the full-resolution composition. */
+  reduced: boolean
+}
 
 export interface CanvasStageHandle {
-  exportImage: () => void
+  /** Renders the framed wall and saves it as a file. */
+  exportImage: () => Promise<ExportOutcome>
+  /** Renders the framed wall and returns it, without downloading (used to attach the final design to an order). */
+  renderImage: () => Promise<ExportResult>
 }
 
 interface PinchState {
   lastDist: number
 }
 
-export const CanvasStage = forwardRef<CanvasStageHandle>((_props, ref) => {
+const nextFrame = () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
+
+export const CanvasStage = forwardRef<CanvasStageHandle>(function CanvasStage(_props, ref) {
   const wall = useCompositionStore((s) => s.wall)
   const frames = useCompositionStore((s) => s.frames)
   const activeLayoutId = useCompositionStore((s) => s.activeLayoutId)
   const placementMode = useCompositionStore((s) => s.placementMode)
   const wallRegion = useCompositionStore((s) => s.wallRegion)
-  const setWallRegion = useCompositionStore((s) => s.setWallRegion)
-  const setFramePhoto = useCompositionStore((s) => s.setFramePhoto)
+  const step = useJourneyStore((s) => s.currentStep)
+  const viewMode = useJourneyStore((s) => s.viewMode)
   const selectedFrameId = useUIStore((s) => s.selectedFrameId)
-  const editingPhotoFrameId = useUIStore((s) => s.editingPhotoFrameId)
   const perspectiveEditMode = useUIStore((s) => s.perspectiveEditMode)
-  const isSelectingWall = useUIStore((s) => s.isSelectingWall)
-  const stopWallSelection = useUIStore((s) => s.stopWallSelection)
   const isExportingPreview = useUIStore((s) => s.isExportingPreview)
   const debugReferenceQuad = useUIStore((s) => s.debugReferenceQuad)
   const setDebugReferenceQuad = useUIStore((s) => s.setDebugReferenceQuad)
   const updateDebugReferenceQuadCorner = useUIStore((s) => s.updateDebugReferenceQuadCorner)
-  const showBefore = useJourneyStore((s) => s.showBefore)
   const viewport = useUIStore((s) => s.viewport)
   const selectFrame = useUIStore((s) => s.selectFrame)
-  const setEditingPhoto = useUIStore((s) => s.setEditingPhoto)
   const setViewport = useUIStore((s) => s.setViewport)
   const fitViewport = useUIStore((s) => s.fitViewport)
   const lightingMap = useFrameLighting(wall, frames)
-
-  const [wallClickPoints, setWallClickPoints] = useState<{ x: number; y: number }[]>([])
-
-  useEffect(() => {
-    if (!isSelectingWall) setWallClickPoints([])
-  }, [isSelectingWall])
+  const { addPhotos } = usePhotoUpload()
 
   const containerRef = useRef<HTMLDivElement | null>(null)
   const stageRef = useRef<Konva.Stage | null>(null)
-  const transformerRef = useRef<Konva.Transformer | null>(null)
-  const frameNodes = useRef(new Map<string, Konva.Group>())
   const pendingUploadFrameId = useRef<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const pinchRef = useRef<PinchState | null>(null)
 
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 })
-  const [photoUploadError, setPhotoUploadError] = useState<string | null>(null)
 
   useEffect(() => {
     const el = containerRef.current
     if (!el) return
     const observer = new ResizeObserver((entries) => {
       const entry = entries[0]
-      if (entry) {
-        setContainerSize({ width: entry.contentRect.width, height: entry.contentRect.height })
-      }
+      if (entry) setContainerSize({ width: entry.contentRect.width, height: entry.contentRect.height })
     })
     observer.observe(el)
     return () => observer.disconnect()
@@ -91,37 +89,14 @@ export const CanvasStage = forwardRef<CanvasStageHandle>((_props, ref) => {
   useEffect(() => {
     if (!wall || containerSize.width === 0 || containerSize.height === 0) return
     if (useUIStore.getState().viewport.isCustom) return
-    const fit = fitContain(containerSize.width, containerSize.height, wall.width, wall.height)
-    fitViewport({
-      scale: fit.scale,
-      x: (containerSize.width - fit.width) / 2,
-      y: (containerSize.height - fit.height) / 2,
-    })
-  }, [containerSize.width, containerSize.height, wall, fitViewport])
+    const fit = computeCanvasFit(containerSize, wall)
+    fitViewport({ scale: fit.scale, x: fit.x, y: fit.y })
+  }, [containerSize, wall, fitViewport])
 
+  // Developer tool: seed the perspective-debug reference quad the moment a
+  // frame is selected while perspective-editing (see uiStore.debugReferenceQuad).
   useEffect(() => {
-    const transformer = transformerRef.current
-    if (!transformer) return
-    if (editingPhotoFrameId || !selectedFrameId) {
-      transformer.nodes([])
-      transformer.getLayer()?.batchDraw()
-      return
-    }
-    const node = frameNodes.current.get(selectedFrameId)
-    transformer.nodes(node ? [node] : [])
-    transformer.getLayer()?.batchDraw()
-  }, [selectedFrameId, editingPhotoFrameId, frames])
-
-  // Seed the perspective-debug reference quad the moment it's needed: a
-  // frame is selected while perspective-editing and no guide exists yet.
-  // Starts just outside the frame's own unwarped position (not exactly
-  // coincident with it — two perfectly overlapping quads' corner handles
-  // would stack at identical screen positions, and the frame's own handles,
-  // rendered on top, would intercept every click meant for the reference
-  // quad underneath, making it undraggable). The developer drags it outward
-  // further to trace the photographed wall's true shape.
-  useEffect(() => {
-    if (!perspectiveEditMode || debugReferenceQuad) return
+    if (!import.meta.env.DEV || !perspectiveEditMode || debugReferenceQuad) return
     const frame = frames.find((f) => f.id === selectedFrameId)
     if (!frame) return
     const refDim = Math.min(frame.width, frame.height)
@@ -130,71 +105,58 @@ export const CanvasStage = forwardRef<CanvasStageHandle>((_props, ref) => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        if (isSelectingWall) {
-          stopWallSelection()
-          return
-        }
-        selectFrame(null)
-        setEditingPhoto(null)
-      }
+      if (e.key === 'Escape') selectFrame(null)
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [selectFrame, setEditingPhoto, isSelectingWall, stopWallSelection])
+  }, [selectFrame])
 
-  useEffect(() => {
-    if (!photoUploadError) return
-    const timer = setTimeout(() => setPhotoUploadError(null), 4500)
-    return () => clearTimeout(timer)
-  }, [photoUploadError])
+  /** Renders the whole framed wall to an image at the best size this device can safely make. */
+  const capture = async (): Promise<ExportResult> => {
+    const stage = stageRef.current
+    if (!stage || !wall || containerSize.width === 0 || containerSize.height === 0) {
+      throw new Error('canvas not ready')
+    }
+    const previous = {
+      selection: useUIStore.getState().selectedFrameId,
+      viewport: useUIStore.getState().viewport,
+      viewMode: useJourneyStore.getState().viewMode,
+      fraction: useJourneyStore.getState().compareFraction,
+    }
+    // Hide selection outlines, wall handles and empty-frame hints so the
+    // image shows only the physical composition — and always render the
+    // finished design, never a before/compare view.
+    selectFrame(null)
+    useUIStore.setState({ isExportingPreview: true })
+    useJourneyStore.getState().showAfterImmediately()
+
+    // Frame the whole wall photo in view (independent of the user's current
+    // pan/zoom) so the crop below always captures the full composition.
+    const fit = computeCanvasFit(containerSize, wall)
+    fitViewport({ scale: fit.scale, x: fit.x, y: fit.y })
+
+    try {
+      // Two frames so both the state update and the resulting Konva redraw land first.
+      await nextFrame()
+      await nextFrame()
+      return await exportStageAsImage(stage, { x: fit.x, y: fit.y, width: fit.width, height: fit.height }, { width: wall.width, height: wall.height })
+    } finally {
+      useUIStore.setState({ viewport: previous.viewport, isExportingPreview: false })
+      useJourneyStore.setState({ viewMode: previous.viewMode, compareFraction: previous.fraction })
+      selectFrame(previous.selection)
+    }
+  }
 
   useImperativeHandle(ref, () => ({
-    exportImage: () => {
-      const stage = stageRef.current
-      if (!stage || !wall || containerSize.width === 0 || containerSize.height === 0) return
-      const previousSelection = selectedFrameId
-      const previousEditing = editingPhotoFrameId
-      const previousViewport = useUIStore.getState().viewport
-      const wasShowingBefore = useJourneyStore.getState().showBefore
-      selectFrame(null)
-      setEditingPhoto(null)
-      // Hides selection outlines and any perspective/wall-region handles so
-      // the exported image shows only the physical composition, no chrome —
-      // and always exports the "after" composition, never a Before view.
-      useUIStore.setState({ isExportingPreview: true })
-      useJourneyStore.getState().setBeforeAfter(false)
-
-      // Frame the whole wall photo in view (independent of the user's current
-      // pan/zoom) so the crop below always captures the full composition.
-      const fit = fitContain(containerSize.width, containerSize.height, wall.width, wall.height)
-      const offsetX = (containerSize.width - fit.width) / 2
-      const offsetY = (containerSize.height - fit.height) / 2
-      fitViewport({ scale: fit.scale, x: offsetX, y: offsetY })
-
-      // Two rAFs so both the state update and the resulting Konva redraw land
-      // before we rasterize.
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          exportStageAsImage(stage, {
-            x: offsetX,
-            y: offsetY,
-            width: fit.width,
-            height: fit.height,
-            pixelRatio: wall.width / fit.width,
-          })
-          useUIStore.setState({ viewport: previousViewport, isExportingPreview: false })
-          useJourneyStore.getState().setBeforeAfter(wasShowingBefore)
-          selectFrame(previousSelection)
-          setEditingPhoto(previousEditing)
-        })
-      })
+    exportImage: async () => {
+      const result = await capture()
+      downloadBlob(result.blob, 'my-wall.png')
+      return { width: result.width, height: result.height, reduced: result.reduced }
     },
+    renderImage: capture,
   }))
 
-  const baseFit = wall
-    ? fitContain(containerSize.width || 1, containerSize.height || 1, wall.width, wall.height)
-    : { scale: 1, width: 1, height: 1 }
+  const baseFit = wall ? computeCanvasFit(containerSize, wall) : { scale: 1, x: 0, y: 0, width: 1, height: 1 }
   const minScale = baseFit.scale * MIN_ZOOM
   const maxScale = baseFit.scale * MAX_ZOOM
 
@@ -207,11 +169,11 @@ export const CanvasStage = forwardRef<CanvasStageHandle>((_props, ref) => {
       x: (pointer.x - stage.x()) / oldScale,
       y: (pointer.y - stage.y()) / oldScale,
     }
-    const newPos = {
+    setViewport({
+      scale: newScale,
       x: pointer.x - mousePointTo.x * newScale,
       y: pointer.y - mousePointTo.y * newScale,
-    }
-    setViewport({ scale: newScale, x: newPos.x, y: newPos.y })
+    })
   }
 
   const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
@@ -237,116 +199,97 @@ export const CanvasStage = forwardRef<CanvasStageHandle>((_props, ref) => {
     const center = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 }
     const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y)
 
-    if (pinchRef.current) {
-      const scaleBy = dist / pinchRef.current.lastDist
-      applyZoomAtPoint(center, stage.scaleX() * scaleBy)
-    }
+    if (pinchRef.current) applyZoomAtPoint(center, stage.scaleX() * (dist / pinchRef.current.lastDist))
     pinchRef.current = { lastDist: dist }
   }
 
   const handleZoomButton = (factor: number) => {
     const stage = stageRef.current
     if (!stage) return
-    const center = { x: containerSize.width / 2, y: containerSize.height / 2 }
-    applyZoomAtPoint(center, stage.scaleX() * factor)
+    applyZoomAtPoint({ x: containerSize.width / 2, y: containerSize.height / 2 }, stage.scaleX() * factor)
   }
 
   const handleFit = () => {
     if (!wall) return
-    const fit = fitContain(containerSize.width, containerSize.height, wall.width, wall.height)
-    fitViewport({
-      scale: fit.scale,
-      x: (containerSize.width - fit.width) / 2,
-      y: (containerSize.height - fit.height) / 2,
-    })
+    fitViewport({ scale: baseFit.scale, x: baseFit.x, y: baseFit.y })
   }
 
-  const deselectIfBackground = (target: Konva.Node) => {
-    if (target === target.getStage()) {
-      selectFrame(null)
-      setEditingPhoto(null)
-    }
-  }
-
-  const handleWallSelectionClick = () => {
-    const stage = stageRef.current
-    if (!stage) return
-    const point = stage.getRelativePointerPosition()
-    if (!point) return
-    const next = [...wallClickPoints, { x: point.x, y: point.y }]
-    if (next.length < 4) {
-      setWallClickPoints(next)
-      return
-    }
-    setWallRegion({ topLeft: next[0], topRight: next[1], bottomRight: next[2], bottomLeft: next[3] })
-    stopWallSelection()
-    setWallClickPoints([])
-  }
-
-  const handleRequestPhoto = (frameId: string) => {
-    pendingUploadFrameId.current = frameId
-    fileInputRef.current?.click()
-  }
+  // Tapping an empty frame while adding photos opens the picker for it;
+  // in any other step a tap just selects the frame.
+  const handleActivate = useCallback(
+    (frameId: string) => {
+      selectFrame(frameId)
+      const frame = useCompositionStore.getState().frames.find((f) => f.id === frameId)
+      if (frame && !frame.photo && useJourneyStore.getState().currentStep === 3) {
+        pendingUploadFrameId.current = frameId
+        fileInputRef.current?.click()
+      }
+    },
+    [selectFrame],
+  )
 
   const handlePhotoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     const frameId = pendingUploadFrameId.current
     e.target.value = ''
-    if (!file || !frameId) return
-    try {
-      const asset = await validateAndLoadImage(file)
-      setFramePhoto(frameId, asset)
-    } catch (err) {
-      setPhotoUploadError(err instanceof Error ? err.message : 'That photo could not be loaded.')
-    }
+    if (file && frameId) await addPhotos([file], frameId)
   }
 
-  if (!wall) {
-    return (
-      <div ref={containerRef} className={styles.container}>
-        <WallUploader />
-      </div>
-    )
-  }
+  if (!wall) return null
 
-  const zoomPercent = Math.round((viewport.scale / baseFit.scale) * 100)
+  const zoomPercent = Math.round((viewport.scale / baseFit.scale) * 100) || 100
   const selectedFrame = frames.find((f) => f.id === selectedFrameId)
+  const interactive = step >= 3 && step <= 5
+  const showWallEditor = step === 1 && placementMode === 'wall-surface' && wallRegion !== null && !isExportingPreview
+  const layout = getLayout(activeLayoutId)
 
   return (
     <div ref={containerRef} className={styles.container}>
-      <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={handlePhotoFileChange} />
-      <Stage
-        ref={stageRef}
-        width={containerSize.width}
-        height={containerSize.height}
-        scaleX={viewport.scale}
-        scaleY={viewport.scale}
-        x={viewport.x}
-        y={viewport.y}
-        draggable={!editingPhotoFrameId}
-        onDragMove={(e) => {
-          // Drag events bubble; only react when the Stage itself is the node
-          // being dragged, not a bubbled event from a frame/photo drag.
-          if (e.target !== e.target.getStage()) return
-          setViewport({ x: e.target.x(), y: e.target.y() })
-        }}
-        onWheel={handleWheel}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={() => {
-          pinchRef.current = null
-        }}
-        className={styles.stage}
-        onMouseDown={(e) => deselectIfBackground(e.target)}
-        onTap={(e) => deselectIfBackground(e.target)}
-      >
-        <Layer>
-          <WallBackground src={wall.src} width={wall.width} height={wall.height} />
-          {!showBefore && (
-            <>
-              {placementMode === 'wall-surface' && wallRegion && !isExportingPreview && (
-                <WallRegionOverlay region={wallRegion} />
-              )}
-              {getLayout(activeLayoutId).decorativeElements?.map((el, i) => (
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept={ACCEPTED_IMAGE_TYPES.join(',')}
+        hidden
+        aria-label="Choose a photo for this frame"
+        onChange={handlePhotoFileChange}
+      />
+      <div className={styles.canvasWrap} role="img" aria-label={describeDesign(frames)}>
+        <Stage
+          ref={stageRef}
+          width={containerSize.width}
+          height={containerSize.height}
+          scaleX={viewport.scale}
+          scaleY={viewport.scale}
+          x={viewport.x}
+          y={viewport.y}
+          // Panning only makes sense once zoomed in; at "fit" a stray drag
+          // would just knock the photo off-centre.
+          draggable={viewport.isCustom}
+          onDragMove={(e) => {
+            // Drag events bubble; only react when the Stage itself is the node
+            // being dragged, not a bubbled event from a frame/handle drag.
+            if (e.target !== e.target.getStage()) return
+            setViewport({ x: e.target.x(), y: e.target.y() })
+          }}
+          onWheel={handleWheel}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={() => {
+            pinchRef.current = null
+          }}
+          className={styles.stage}
+          onMouseDown={(e) => {
+            if (e.target === e.target.getStage()) selectFrame(null)
+          }}
+          onTap={(e) => {
+            if (e.target === e.target.getStage()) selectFrame(null)
+          }}
+        >
+          <Layer>
+            <WallBackground src={wall.src} width={wall.width} height={wall.height} viewportScale={viewport.scale} withShadow={!isExportingPreview} />
+            {showWallEditor && wallRegion && <WallRegionOverlay region={wallRegion} />}
+
+            <CompareReveal wall={wall} viewportScale={viewport.scale} showDivider={viewMode === 'compare' && !isExportingPreview}>
+              {layout.decorativeElements?.map((el, i) => (
                 <Rect
                   key={i}
                   x={(el.xPct - el.wPct / 2) * wall.width}
@@ -363,82 +306,45 @@ export const CanvasStage = forwardRef<CanvasStageHandle>((_props, ref) => {
                 <FrameNode
                   key={frame.id}
                   frame={frame}
-                  style={getFrameStyle(frame.styleId)}
+                  style={resolveFrameStyle(frame.productId, frame.matId)}
                   isSelected={selectedFrameId === frame.id}
-                  isEditingPhoto={editingPhotoFrameId === frame.id}
+                  interactive={interactive}
+                  viewportScale={viewport.scale}
                   lightingFactor={lightingMap.get(frame.id) ?? 1}
-                  registerNode={(id, node) => {
-                    if (node) frameNodes.current.set(id, node)
-                    else frameNodes.current.delete(id)
-                  }}
-                  onSelect={() => selectFrame(frame.id)}
-                  onEnterPhotoEdit={() => setEditingPhoto(frame.id)}
-                  onRequestPhoto={() => handleRequestPhoto(frame.id)}
+                  onActivate={handleActivate}
                 />
               ))}
-              <Transformer
-                ref={transformerRef}
-                rotateEnabled
-                flipEnabled={false}
-                boundBoxFunc={(oldBox, newBox) =>
-                  newBox.width < 40 || newBox.height < 40 ? oldBox : newBox
-                }
-              />
-              {perspectiveEditMode && selectedFrame && debugReferenceQuad && (
-                <QuadHandles
-                  quad={debugReferenceQuad}
-                  viewportScale={viewport.scale}
-                  onCornerDragMove={updateDebugReferenceQuadCorner}
-                  color="#22b573"
-                />
-              )}
-              {perspectiveEditMode && selectedFrame?.perspective && debugReferenceQuad && (
-                <QuadConnectorLines from={debugReferenceQuad} to={selectedFrame.perspective} />
-              )}
-              {perspectiveEditMode && selectedFrame?.perspective && (
-                <PerspectiveHandles frame={selectedFrame} viewportScale={viewport.scale} />
-              )}
-              {placementMode === 'wall-surface' && wallRegion && !isSelectingWall && !isExportingPreview && (
-                <WallRegionHandles region={wallRegion} viewportScale={viewport.scale} />
-              )}
+            </CompareReveal>
 
-              {isSelectingWall && (
-                <>
-                  <Rect
-                    x={0}
-                    y={0}
-                    width={wall.width}
-                    height={wall.height}
-                    fill="rgba(0,0,0,0.001)"
-                    onClick={handleWallSelectionClick}
-                    onTap={handleWallSelectionClick}
-                  />
-                  {wallClickPoints.length > 1 && (
-                    <Line
-                      points={wallClickPoints.flatMap((p) => [p.x, p.y])}
-                      stroke="#e08a1e"
-                      strokeWidth={2 / viewport.scale}
-                      listening={false}
-                    />
-                  )}
-                  {wallClickPoints.map((p, i) => (
-                    <Circle
-                      key={i}
-                      x={p.x}
-                      y={p.y}
-                      radius={7 / viewport.scale}
-                      fill="#e08a1e"
-                      stroke="#ffffff"
-                      strokeWidth={1.5 / viewport.scale}
-                      listening={false}
-                    />
-                  ))}
-                </>
-              )}
-            </>
-          )}
-        </Layer>
-      </Stage>
+            {import.meta.env.DEV && perspectiveEditMode && selectedFrame && debugReferenceQuad && (
+              <QuadHandles
+                quad={debugReferenceQuad}
+                viewportScale={viewport.scale}
+                onCornerDragMove={updateDebugReferenceQuadCorner}
+                color="#22b573"
+              />
+            )}
+            {import.meta.env.DEV && perspectiveEditMode && selectedFrame?.perspective && debugReferenceQuad && (
+              <QuadConnectorLines from={debugReferenceQuad} to={selectedFrame.perspective} />
+            )}
+            {import.meta.env.DEV && perspectiveEditMode && selectedFrame?.perspective && (
+              <PerspectiveHandles frame={selectedFrame} viewportScale={viewport.scale} />
+            )}
+            {showWallEditor && wallRegion && (
+              <WallRegionHandles region={wallRegion} viewportScale={viewport.scale} wall={wall} />
+            )}
+          </Layer>
+        </Stage>
+      </div>
+
+      {viewMode === 'compare' && !isExportingPreview && (
+        <div className={styles.compareLabels} aria-hidden>
+          <span className={styles.compareLabel}>Before</span>
+          <span className={styles.compareLabel}>After</span>
+        </div>
+      )}
+
+      {showWallEditor && <div className={styles.canvasHint}>Drag the corners onto your wall</div>}
 
       <ZoomControls
         zoomPercent={zoomPercent}
@@ -446,21 +352,6 @@ export const CanvasStage = forwardRef<CanvasStageHandle>((_props, ref) => {
         onZoomOut={() => handleZoomButton(0.8)}
         onFit={handleFit}
       />
-
-      {isSelectingWall && (
-        <div className={styles.wallSelectionBanner} role="status">
-          Click the <strong>{WALL_SELECTION_STEPS[wallClickPoints.length]}</strong> corner of the wall
-          ({wallClickPoints.length + 1} of 4) — Esc to cancel
-        </div>
-      )}
-
-      {photoUploadError && (
-        <div className={styles.photoErrorBanner} role="alert">
-          {photoUploadError}
-        </div>
-      )}
     </div>
   )
 })
-
-CanvasStage.displayName = 'CanvasStage'

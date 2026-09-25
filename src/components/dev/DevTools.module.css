@@ -1,0 +1,104 @@
+/*
+ * Development-only. The labs below were built against an earlier set of
+ * design tokens; these aliases (scoped to whenever this dev chunk is loaded)
+ * keep them rendering without dragging the old palette back into the app.
+ */
+:global(:root) {
+  --surface: #ffffff;
+  --surface-raised: var(--card);
+  --surface-sunken: var(--paper-2);
+  --border: var(--line);
+  --border-strong: var(--line-strong);
+  --text-primary: var(--ink);
+  --text-secondary: var(--ink-2);
+  --text-tertiary: var(--ink-3);
+  --accent-bg: var(--accent-soft);
+  --accent-border: var(--accent);
+  --danger-text: var(--danger);
+}
+
+.toggle {
+  position: fixed;
+  right: 12px;
+  top: 12px;
+  z-index: 70;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px dashed var(--line-strong);
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--ink-3);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  opacity: 0.55;
+}
+
+.toggle:hover {
+  opacity: 1;
+}
+
+.panel {
+  position: fixed;
+  right: 12px;
+  top: 40px;
+  z-index: 70;
+  width: 260px;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lift);
+  padding: 14px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-2);
+  margin-bottom: 12px;
+}
+
+.close {
+  border: none;
+  background: none;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--ink-3);
+  cursor: pointer;
+  padding: 2px 6px;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.note {
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}

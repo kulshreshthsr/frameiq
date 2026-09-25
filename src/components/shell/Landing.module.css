@@ -1,0 +1,105 @@
+.landing {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px calc(24px + var(--safe-bottom));
+}
+
+.inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 480px);
+  gap: 64px;
+  align-items: center;
+  width: 100%;
+  max-width: 1080px;
+  margin: auto;
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.headline {
+  font-family: var(--font-serif);
+  font-size: clamp(34px, 4.6vw, 54px);
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.lede {
+  max-width: 34em;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.steps li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  counter-increment: step;
+}
+
+.steps li::before {
+  content: counter(step);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  font-size: 12px;
+}
+
+.privacy {
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
+@media (max-width: 999px) {
+  .landing {
+    align-items: flex-start;
+    padding-top: 28px;
+  }
+
+  .inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+    margin: 0 auto;
+  }
+
+  .copy {
+    gap: 12px;
+  }
+
+  .lede {
+    font-size: 15.5px;
+  }
+
+  /* On a phone the uploader comes first below the headline; the how-it-works
+   * row is supporting detail and tucks under it. */
+  .steps {
+    display: none;
+  }
+}

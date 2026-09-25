@@ -5,12 +5,12 @@ import { QuadHandles } from './QuadHandles'
 interface WallRegionHandlesProps {
   region: PerspectiveCorners
   viewportScale: number
+  wall: { width: number; height: number }
 }
 
-/** Draggable corner handles for the customer-selected wall surface (Mode B).
- * Distinct orange color from the per-frame perspective handles so the two
- * concepts stay visually separate if both happen to be active at once. */
-export function WallRegionHandles({ region, viewportScale }: WallRegionHandlesProps) {
+/** Draggable corner handles for the wall the customer marked. Accent-coloured
+ * so they read as "yours to move", distinct from anything else on the canvas. */
+export function WallRegionHandles({ region, viewportScale, wall }: WallRegionHandlesProps) {
   const updateWallRegionCorner = useCompositionStore((s) => s.updateWallRegionCorner)
 
   return (
@@ -18,7 +18,8 @@ export function WallRegionHandles({ region, viewportScale }: WallRegionHandlesPr
       quad={region}
       viewportScale={viewportScale}
       onCornerDragMove={updateWallRegionCorner}
-      color="#e08a1e"
+      color="#b4532a"
+      bounds={wall}
     />
   )
 }

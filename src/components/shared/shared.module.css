@@ -1,0 +1,257 @@
+/* ------------------------------------------------------------ price tag */
+
+.priceTag {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  line-height: 1.15;
+}
+
+.priceCount {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--ink-3);
+}
+
+.priceValue {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* ------------------------------------------------------------ frame strip */
+
+.strip {
+  padding-bottom: 8px;
+}
+
+.chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  min-width: 68px;
+  padding: 6px 6px 5px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--ink-2);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.chip:hover {
+  border-color: var(--line-strong);
+}
+
+.chipActive,
+.chipActive:hover {
+  border-color: var(--ink);
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 0 0 1px var(--ink);
+}
+
+.chipThumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 6px;
+  background-color: var(--paper-2);
+  background-size: cover;
+  background-position: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+
+.chipLabel {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------ print quality */
+
+.qualityNote {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--paper);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+.qualityNote strong {
+  color: var(--ink);
+}
+
+.qualityLow {
+  border-color: #d9a79b;
+  background: var(--danger-soft);
+}
+
+/* ------------------------------------------------------------ quote */
+
+.quote {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.quoteLines {
+  margin: 0;
+  padding: 4px 16px;
+  list-style: none;
+}
+
+.quoteLine {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 14.5px;
+  font-weight: 600;
+}
+
+.quoteLine:last-child {
+  border-bottom: none;
+}
+
+.quoteWhat {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.quoteQty {
+  color: var(--ink-3);
+  font-weight: 600;
+}
+
+.quoteMeta {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+.quoteAmount {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.quoteTotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 14px 16px;
+  border-top: 1px solid var(--line-strong);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.quoteTotal span:last-child {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* ------------------------------------------------------------ toasts */
+
+.toasts {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--safe-bottom) + 96px);
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(440px, calc(100vw - 24px));
+}
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 8px 12px 16px;
+  border-radius: var(--radius);
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 14px;
+  line-height: 1.4;
+  box-shadow: var(--shadow-lift);
+}
+
+.toastError {
+  background: #5a1f19;
+}
+
+.toastText {
+  flex: 1;
+  padding-top: 2px;
+}
+
+.toastClose {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  margin: -8px -4px -8px 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font-size: 22px;
+  line-height: 1;
+  opacity: 0.85;
+}
+
+.toastClose:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ------------------------------------------------------------ dialog */
+
+.dialog {
+  padding: 0;
+  border: none;
+  border-radius: 14px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--shadow-lift);
+  max-width: min(440px, calc(100vw - 24px));
+  width: 100%;
+}
+
+.dialog::backdrop {
+  background: rgba(33, 28, 23, 0.5);
+}
+
+.dialogBody {
+  padding: 24px;
+}
+
+@media (max-width: 999px) {
+  .toasts {
+    bottom: calc(var(--safe-bottom) + 88px);
+  }
+}

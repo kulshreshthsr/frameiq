@@ -12,40 +12,42 @@ export interface Viewport {
 
 const DEFAULT_VIEWPORT: Viewport = { scale: 1, x: 0, y: 0, isCustom: false }
 
+/** A short, customer-facing message (never a raw error). */
+export interface Notice {
+  id: number
+  kind: 'info' | 'success' | 'error'
+  message: string
+}
+
+let nextNoticeId = 1
+
 interface UIState {
   selectedFrameId: string | null
-  editingPhotoFrameId: string | null
+  /** The frame whose photo is open in the crop editor, if any. */
+  cropEditorFrameId: string | null
   viewport: Viewport
-  /** Developer-only mode: shows draggable perspective corner handles for the
-   * selected frame. Hidden from the normal customer-facing experience. */
+  /** Developer-only mode (dev builds): shows draggable perspective corner
+   * handles for the selected frame. Never reachable in a production build. */
   perspectiveEditMode: boolean
-  /** True only while the customer is clicking the four wall-surface corners
-   * in "Select Wall" mode (Mode B) — before that quad is committed. */
-  isSelectingWall: boolean
   /** True only for the instant a composition export is being rasterized —
-   * hides all editing chrome (selection outlines, perspective/wall-region
-   * handles) so the exported image shows only the physical composition. */
+   * hides all editing chrome (selection outlines, wall handles, the empty-frame
+   * "+" hint) so the exported image shows only the physical composition. */
   isExportingPreview: boolean
-  /** Developer-only alignment guide, live while perspective-editing a frame:
-   * a second, independent quad the developer traces onto the wall's actual
-   * visible surface in the photo, so there's something to drag the frame's
-   * own corners toward. Deliberately NOT `wallRegion` (Mode B's quad) —
-   * that state drives `remapExistingFrames`, which unconditionally rewrites
-   * every frame's geometry (including wiping `perspective` back to
-   * undefined in free-placement mode) whenever it changes; reusing it here
-   * would silently destroy manually-tuned per-frame perspective corners on
-   * the first drag. This is purely presentational and never touches
-   * `compositionStore.frames`. */
+  /** Developer-only alignment guide, live while perspective-editing a frame.
+   * Deliberately NOT the customer's wall region: that drives every frame's
+   * geometry, while this is purely presentational. */
   debugReferenceQuad: PerspectiveCorners | null
+  notices: Notice[]
 
   selectFrame: (frameId: string | null) => void
-  setEditingPhoto: (frameId: string | null) => void
+  openCropEditor: (frameId: string) => void
+  closeCropEditor: () => void
   clearSelection: () => void
   togglePerspectiveEditMode: () => void
-  startWallSelection: () => void
-  stopWallSelection: () => void
   setDebugReferenceQuad: (quad: PerspectiveCorners) => void
   updateDebugReferenceQuadCorner: (corner: keyof PerspectiveCorners, point: { x: number; y: number }) => void
+  pushNotice: (kind: Notice['kind'], message: string) => void
+  dismissNotice: (id: number) => void
 
   /** User-driven viewport change (wheel/drag/pinch/zoom buttons). */
   setViewport: (partial: Partial<Pick<Viewport, 'scale' | 'x' | 'y'>>) => void
@@ -57,43 +59,41 @@ interface UIState {
 
 export const useUIStore = create<UIState>((set) => ({
   selectedFrameId: null,
-  editingPhotoFrameId: null,
+  cropEditorFrameId: null,
   viewport: DEFAULT_VIEWPORT,
   perspectiveEditMode: false,
-  isSelectingWall: false,
   isExportingPreview: false,
   debugReferenceQuad: null,
+  notices: [],
 
-  // Reference quad is only meaningful for whichever frame is currently
-  // being perspective-edited — clear it whenever the selection changes so a
-  // newly-selected frame doesn't inherit the previous frame's guide.
+  // The reference quad is only meaningful for whichever frame is being
+  // perspective-edited — clear it when the selection changes.
   selectFrame: (frameId) =>
     set((state) => ({
       selectedFrameId: frameId,
       debugReferenceQuad: frameId === state.selectedFrameId ? state.debugReferenceQuad : null,
     })),
+  openCropEditor: (frameId) => set({ cropEditorFrameId: frameId, selectedFrameId: frameId }),
+  closeCropEditor: () => set({ cropEditorFrameId: null }),
+  clearSelection: () => set({ selectedFrameId: null, cropEditorFrameId: null }),
   togglePerspectiveEditMode: () =>
     set((state) => {
       const next = !state.perspectiveEditMode
       return { perspectiveEditMode: next, debugReferenceQuad: next ? state.debugReferenceQuad : null }
     }),
-  startWallSelection: () => set({ isSelectingWall: true, selectedFrameId: null, editingPhotoFrameId: null }),
-  stopWallSelection: () => set({ isSelectingWall: false }),
-  // Entering edit mode (frameId set) also selects that frame. Exiting
-  // (frameId null) only clears editing — the frame stays selected so its
-  // crop controls remain visible.
-  setEditingPhoto: (frameId) =>
-    set((state) => ({
-      editingPhotoFrameId: frameId,
-      selectedFrameId: frameId ?? state.selectedFrameId,
-    })),
-  clearSelection: () => set({ selectedFrameId: null, editingPhotoFrameId: null }),
   setDebugReferenceQuad: (quad) => set({ debugReferenceQuad: quad }),
   updateDebugReferenceQuadCorner: (corner, point) =>
     set((state) => {
       if (!state.debugReferenceQuad) return state
       return { debugReferenceQuad: { ...state.debugReferenceQuad, [corner]: point } }
     }),
+
+  // A repeat of the same message replaces the old one instead of stacking.
+  pushNotice: (kind, message) =>
+    set((state) => ({
+      notices: [...state.notices.filter((n) => n.message !== message), { id: nextNoticeId++, kind, message }].slice(-3),
+    })),
+  dismissNotice: (id) => set((state) => ({ notices: state.notices.filter((n) => n.id !== id) })),
 
   setViewport: (partial) =>
     set((state) => ({ viewport: { ...state.viewport, ...partial, isCustom: true } })),
@@ -102,9 +102,8 @@ export const useUIStore = create<UIState>((set) => ({
   resetUI: () =>
     set({
       selectedFrameId: null,
-      editingPhotoFrameId: null,
+      cropEditorFrameId: null,
       viewport: DEFAULT_VIEWPORT,
-      isSelectingWall: false,
       debugReferenceQuad: null,
     }),
 }))

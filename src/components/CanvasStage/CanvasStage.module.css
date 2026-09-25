@@ -6,13 +6,12 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: var(--surface-sunken);
-  background-image: linear-gradient(45deg, var(--surface-checker) 25%, transparent 25%),
-    linear-gradient(-45deg, var(--surface-checker) 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, var(--surface-checker) 75%),
-    linear-gradient(-45deg, transparent 75%, var(--surface-checker) 75%);
-  background-size: 20px 20px;
-  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  background: var(--paper-2);
+}
+
+.canvasWrap {
+  position: absolute;
+  inset: 0;
 }
 
 .stage {
@@ -21,84 +20,95 @@
 
 .zoomControls {
   position: absolute;
-  right: 16px;
-  bottom: 16px;
+  right: 12px;
+  bottom: 12px;
   display: flex;
   align-items: stretch;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--card);
+  border: 1px solid var(--line);
   border-radius: 10px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-soft);
   overflow: hidden;
 }
 
 .zoomButton {
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   border: none;
   background: transparent;
-  color: var(--text-primary);
-  font-size: 17px;
+  color: var(--ink);
+  font-size: 20px;
   line-height: 1;
-  cursor: pointer;
   transition: background 0.12s ease;
 }
 
 .zoomButton:hover {
-  background: var(--surface-sunken);
+  background: var(--paper-2);
 }
 
 .zoomLabel {
-  min-width: 54px;
+  min-width: 56px;
   border: none;
-  border-left: 1px solid var(--border);
-  border-right: 1px solid var(--border);
+  border-left: 1px solid var(--line);
+  border-right: 1px solid var(--line);
   background: transparent;
-  color: var(--text-secondary);
-  font-size: 12px;
+  color: var(--ink-2);
+  font-size: 13px;
   font-weight: 600;
-  cursor: pointer;
   transition: background 0.12s ease;
 }
 
 .zoomLabel:hover {
-  background: var(--surface-sunken);
+  background: var(--paper-2);
 }
 
-@media (max-width: 720px) {
+/* Before / after captions sit in the canvas corners while comparing. */
+.compareLabels {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.compareLabel {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(33, 28, 23, 0.72);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.canvasHint {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 24px);
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(33, 28, 23, 0.78);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-align: center;
+  pointer-events: none;
+}
+
+@media (max-width: 999px) {
   .zoomControls {
-    bottom: 72px;
+    right: 8px;
+    bottom: 8px;
   }
-}
 
-.photoErrorBanner {
-  position: absolute;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  max-width: min(420px, calc(100% - 32px));
-  padding: 10px 16px;
-  border-radius: 8px;
-  background: var(--danger-bg);
-  border: 1px solid var(--danger-border);
-  color: var(--danger-text);
-  font-size: 13px;
-  text-align: center;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-}
-
-.wallSelectionBanner {
-  position: absolute;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  max-width: min(460px, calc(100% - 32px));
-  padding: 10px 16px;
-  border-radius: 8px;
-  background: rgba(224, 138, 30, 0.12);
-  border: 1px solid rgba(224, 138, 30, 0.5);
-  color: #8a5613;
-  font-size: 13px;
-  text-align: center;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  .zoomButton {
+    width: 44px;
+    height: 44px;
+  }
 }

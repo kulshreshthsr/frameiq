@@ -2,37 +2,34 @@ import { Fragment } from 'react'
 import type Konva from 'konva'
 import { Group, Rect, Text, Image as KonvaImage } from 'react-konva'
 import useImage from 'use-image'
-import type { PhotoAsset, PhotoTransform } from '../../types/frame'
+import type { ImageRef, PhotoTransform } from '../../types/frame'
 import { useUIStore } from '../../state/uiStore'
 
+export interface PhotoEditHandlers {
+  onDragMove?: (e: Konva.KonvaEventObject<DragEvent>) => void
+  onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) => void
+  onWheel?: (e: Konva.KonvaEventObject<WheelEvent>) => void
+}
+
 interface FramedPhotoProps {
-  photo: PhotoAsset | null
+  photo: ImageRef | null
   transform: PhotoTransform
   innerWidth: number
   innerHeight: number
-  isEditing: boolean
-  onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) => void
-  onWheel: (e: Konva.KonvaEventObject<WheelEvent>) => void
+  /** Present only while the crop editor has this photo open. */
+  editing?: PhotoEditHandlers
 }
 
 /** Renders the customer's photo (or an empty-slot placeholder), independent
  * of the frame moulding around it. Knows nothing about frame styling. */
-export function FramedPhoto({
-  photo,
-  transform,
-  innerWidth,
-  innerHeight,
-  isEditing,
-  onDragEnd,
-  onWheel,
-}: FramedPhotoProps) {
+export function FramedPhoto({ photo, transform, innerWidth, innerHeight, editing }: FramedPhotoProps) {
   const [image] = useImage(photo?.src ?? '')
   const isExportingPreview = useUIStore((s) => s.isExportingPreview)
 
   if (!photo || !image) {
     return (
       <Group listening={false}>
-        <Rect width={innerWidth} height={innerHeight} fill="#e8e4dc" />
+        <Rect width={innerWidth} height={innerHeight} fill="#e9e2d4" />
         {/* The "+" affordance is a UI hint to click here, not part of the
          * physical composition — an exported/shared image shouldn't bake in
          * an icon that only makes sense inside the editor. */}
@@ -72,9 +69,10 @@ export function FramedPhoto({
         scaleX={transform.scale}
         scaleY={transform.scale}
         rotation={transform.rotation}
-        draggable={isEditing}
-        onDragEnd={onDragEnd}
-        onWheel={onWheel}
+        draggable={Boolean(editing)}
+        onDragMove={editing?.onDragMove}
+        onDragEnd={editing?.onDragEnd}
+        onWheel={editing?.onWheel}
       />
       {/* A very subtle print-like corner vignette, fixed to the opening
           (not the photo's own pan/zoom/rotation) — reads as a physical

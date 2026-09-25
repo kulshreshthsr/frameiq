@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { validateAndLoadImage } from '../lib/validateAndLoadImage'
+import { friendlyMessage } from '../lib/errors'
 import { useCompositionStore } from '../state/compositionStore'
 import { useUIStore } from '../state/uiStore'
-import { useJourneyStore } from '../state/journeyStore'
 
+/** Loads a room/wall photo into the design. Any failure becomes a calm,
+ * customer-facing sentence — never a raw error. */
 export function useWallUpload() {
   const setWall = useCompositionStore((s) => s.setWall)
   const [isLoading, setIsLoading] = useState(false)
@@ -14,12 +16,11 @@ export function useWallUpload() {
     setError(null)
     setIsLoading(true)
     try {
-      const asset = await validateAndLoadImage(file)
+      const asset = await validateAndLoadImage(file, 'wall')
       setWall(asset)
       useUIStore.getState().resetUI()
-      useJourneyStore.getState().advanceTo(2)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'That image could not be loaded.')
+      setError(friendlyMessage(err, `We couldn't open that photo. Please try a different one.`))
     } finally {
       setIsLoading(false)
     }

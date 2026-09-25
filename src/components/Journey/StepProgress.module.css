@@ -1,10 +1,15 @@
+.nav {
+  min-width: 0;
+}
+
 .list {
   display: flex;
   align-items: center;
-  list-style: none;
+  justify-content: center;
+  gap: 0;
   margin: 0;
   padding: 0;
-  justify-content: center;
+  list-style: none;
 }
 
 .item {
@@ -12,85 +17,97 @@
   align-items: center;
 }
 
-.connector {
-  width: clamp(16px, 4vw, 40px);
-  height: 1.5px;
-  background: var(--border-strong);
-  transition: background 0.2s ease;
-}
-
-.connectorDone {
-  background: var(--accent);
-}
-
-.stepButton {
-  display: flex;
-  flex-direction: column;
+.step {
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: none;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 6px;
   border: none;
-  padding: 4px 6px;
-  cursor: pointer;
+  background: none;
+  color: var(--ink-3);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 
-.stepButton:disabled {
+.step:disabled {
   cursor: default;
+  opacity: 0.55;
 }
 
-.bubble {
-  display: flex;
+.step:not(:disabled):hover .dot {
+  border-color: var(--ink);
+}
+
+.dot {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
+  border: 1.5px solid var(--line-strong);
   border-radius: 50%;
-  border: 1.5px solid var(--border-strong);
-  background: var(--surface);
-  color: var(--text-tertiary);
+  background: transparent;
   font-size: 12px;
   font-weight: 700;
-  transition: all 0.2s ease;
+  color: inherit;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
-.label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-tertiary);
-  letter-spacing: 0.02em;
-  transition: color 0.2s ease;
+.done {
+  color: var(--ink-2);
 }
 
-.stepButton.done .bubble {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: white;
+.done .dot {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
 }
 
-.stepButton.done .label {
-  color: var(--text-secondary);
+.current {
+  color: var(--ink);
 }
 
-.stepButton.active .bubble {
-  border-color: var(--accent);
-  background: var(--accent-bg);
-  color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-bg);
+.current .dot {
+  border-color: var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
-.stepButton.active .label {
-  color: var(--text-primary);
+.rule {
+  width: 18px;
+  height: 1.5px;
+  background: var(--line-strong);
 }
 
-.stepButton:not(:disabled):hover .bubble {
-  border-color: var(--accent);
+.ruleDone {
+  background: var(--ink);
 }
 
-@media (max-width: 720px) {
-  .label {
+/* Phones: only the current step keeps its label. */
+@media (max-width: 999px) {
+  /* Each dot is a full-size touch target; the connecting rules are dropped
+   * because they'd only cost the room those targets need. */
+  .step {
+    justify-content: center;
+    min-width: 42px;
+    padding: 0 4px;
+  }
+
+  .step:not(.current) .label {
     display: none;
   }
-  .connector {
-    width: clamp(10px, 3vw, 20px);
+
+  .rule {
+    display: none;
+  }
+}
+
+@media (min-width: 1000px) {
+  .rule {
+    width: 28px;
   }
 }

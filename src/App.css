@@ -2,118 +2,117 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100svh;
-  background: var(--surface);
+  height: 100vh; /* fallback */
+  height: 100dvh; /* tracks the mobile browser's collapsing toolbar */
+  background: var(--paper);
 }
 
-.appHeader {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 16px;
-  padding: 14px 24px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  font-weight: 700;
-  font-size: 14px;
-  color: var(--text-primary);
-}
-
-.brandMark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
-  background: var(--accent);
-  color: white;
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
-.brandName {
-  letter-spacing: -0.01em;
-}
-
-.headerBalance {
-  /* mirrors .brand's width so StepProgress stays visually centered */
-  justify-self: end;
-}
-
-.appMain {
+.workspace {
   flex: 1;
-  display: flex;
   min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 420px;
 }
 
 .canvasArea {
   position: relative;
-  flex: 1;
   min-width: 0;
   min-height: 0;
 }
 
-.floatingToolbarWrap {
+.canvasLoading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: var(--paper-2);
+  color: var(--ink-3);
+  font-size: 14px;
+}
+
+.stateScreen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 100dvh;
+  padding: 24px;
+  text-align: center;
+  color: var(--ink-2);
+}
+
+.stateScreen h1 {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+/* ------------------------------------------------------------ full screen */
+
+.appFullscreen .workspace {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.exitFullscreen {
+  position: absolute;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  right: 12px;
+  z-index: 30;
+  min-height: 44px;
+  background: rgba(251, 249, 244, 0.94);
+  box-shadow: var(--shadow-soft);
+}
+
+.fullscreenControls {
   position: absolute;
   left: 50%;
-  bottom: 20px;
+  bottom: calc(20px + var(--safe-bottom));
   transform: translateX(-50%);
-  z-index: 20;
-}
-
-.exitFullscreenButton {
-  position: absolute;
-  top: 16px;
-  right: 16px;
   z-index: 30;
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(8px);
-  color: var(--text-primary);
-  font-size: 12.5px;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-lift);
+  border-radius: 10px;
 }
 
-.exitFullscreenButton:hover {
-  background: var(--surface);
+/* ------------------------------------------------------------ dialog text */
+
+.dialogTitle {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }
 
-.appFullscreen .appMain {
-  height: 100svh;
+.dialogText {
+  margin-top: 8px;
+  color: var(--ink-2);
+  font-size: 15px;
 }
 
-@media (max-width: 860px) {
-  .appHeader {
-    padding: 10px 14px;
-    gap: 8px;
+.dialogActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+/* ------------------------------------------------------------ phones */
+
+@media (max-width: 999px) {
+  .workspace {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
   }
 
-  .brandName {
-    display: none;
+  .dialogActions .btn {
+    flex: 1;
   }
 
-  .appMain {
-    flex-direction: column;
-  }
-
-  .canvasArea {
-    order: 1;
-    flex: 1 1 auto;
-  }
-
-  .floatingToolbarWrap {
-    bottom: 12px;
+  /* Sit above the zoom buttons rather than on top of them. */
+  .fullscreenControls {
+    bottom: calc(68px + var(--safe-bottom));
   }
 }

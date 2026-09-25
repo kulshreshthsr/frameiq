@@ -9,11 +9,11 @@ interface ZoomControlsProps {
 
 export function ZoomControls({ zoomPercent, onZoomIn, onZoomOut, onFit }: ZoomControlsProps) {
   return (
-    <div className={styles.zoomControls}>
+    <div className={styles.zoomControls} role="group" aria-label="Zoom">
       <button type="button" className={styles.zoomButton} onClick={onZoomOut} aria-label="Zoom out">
         −
       </button>
-      <button type="button" className={styles.zoomLabel} onClick={onFit} title="Reset to fit">
+      <button type="button" className={styles.zoomLabel} onClick={onFit} aria-label={`Zoom ${zoomPercent} percent. Reset to fit`}>
         {zoomPercent}%
       </button>
       <button type="button" className={styles.zoomButton} onClick={onZoomIn} aria-label="Zoom in">

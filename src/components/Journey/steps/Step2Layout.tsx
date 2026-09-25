@@ -1,48 +1,64 @@
-import { useRef } from 'react'
+import { LAYOUTS, getLayout } from '../../../lib/layouts'
 import { useCompositionStore } from '../../../state/compositionStore'
 import { useJourneyStore } from '../../../state/journeyStore'
-import { useWallUpload } from '../../../hooks/useWallUpload'
-import { getLayout } from '../../../lib/layouts'
-import { ACCEPTED_IMAGE_TYPES } from '../../../lib/constants'
-import { LayoutPicker } from '../../Toolbar/LayoutPicker'
-import { StepFooterNav } from '../StepFooterNav'
+import { PanelShell, StepFooter } from '../PanelShell'
 import styles from '../Journey.module.css'
 
 export function Step2Layout() {
   const activeLayoutId = useCompositionStore((s) => s.activeLayoutId)
-  const activeLayout = getLayout(activeLayoutId)
+  const applyLayout = useCompositionStore((s) => s.applyLayout)
   const advanceTo = useJourneyStore((s) => s.advanceTo)
-  const { upload: uploadWall, isLoading, error } = useWallUpload()
-  const inputRef = useRef<HTMLInputElement | null>(null)
+  const goToStep = useJourneyStore((s) => s.goToStep)
+  const active = getLayout(activeLayoutId)
 
   return (
-    <>
-      <div className={styles.content}>
-        <h2 className={styles.title}>Choose a layout</h2>
-        <p className={styles.hint}>{activeLayout.description}</p>
-        <LayoutPicker />
-        <input
-          ref={inputRef}
-          type="file"
-          accept={ACCEPTED_IMAGE_TYPES.join(',')}
-          hidden
-          onChange={(e) => {
-            uploadWall(e.target.files?.[0])
-            e.target.value = ''
-          }}
-        />
-        <button
-          type="button"
-          className={styles.linkButton}
-          style={{ marginTop: 16 }}
-          onClick={() => inputRef.current?.click()}
-          disabled={isLoading}
-        >
-          {isLoading ? 'Loading…' : 'Use a different wall photo'}
-        </button>
-        {error && <p style={{ color: 'var(--danger-text)', fontSize: 12, marginTop: 8 }}>{error}</p>}
+    <PanelShell
+      step={2}
+      title="Choose a layout"
+      subtitle="How your frames are arranged. You can always change it later."
+      backLabel="Your wall"
+      onBack={() => goToStep(1)}
+      footer={<StepFooter primaryLabel="Add your photos" onPrimary={() => advanceTo(3)} />}
+    >
+      <div className={`scroller ${styles.layoutList}`} role="radiogroup" aria-label="Layouts">
+        {LAYOUTS.map((layout) => {
+          const isActive = layout.id === activeLayoutId
+          return (
+            <button
+              key={layout.id}
+              type="button"
+              role="radio"
+              aria-checked={isActive}
+              className={`${styles.layoutCard} ${isActive ? styles.cardActive : ''}`}
+              onClick={() => applyLayout(layout.id)}
+              data-testid={`layout-${layout.id}`}
+            >
+              <span className={styles.layoutPreview} aria-hidden>
+                {layout.slots.map((slot) => (
+                  <span
+                    key={slot.id}
+                    className={styles.layoutSlot}
+                    style={{
+                      left: `${(slot.xPct - slot.wPct / 2) * 100}%`,
+                      top: `${(slot.yPct - slot.hPct / 2) * 100}%`,
+                      width: `${slot.wPct * 100}%`,
+                      height: `${slot.hPct * 100}%`,
+                      transform: slot.rotation ? `rotate(${slot.rotation}deg)` : undefined,
+                    }}
+                  />
+                ))}
+              </span>
+              <span className={styles.cardName}>{layout.name}</span>
+              <span className={styles.cardMeta}>
+                {layout.slots.length} frame{layout.slots.length === 1 ? '' : 's'}
+              </span>
+            </button>
+          )
+        })}
       </div>
-      <StepFooterNav onContinue={() => advanceTo(3)} />
-    </>
+      <p className={styles.hint} aria-live="polite">
+        {active.description}
+      </p>
+    </PanelShell>
   )
 }

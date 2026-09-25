@@ -1,18 +1,31 @@
-export interface WallImage {
+import type { GlassId, MatId, Orientation } from '../domain/catalog'
+
+/** Anything that can be drawn: a URL plus its pixel size. Test/sample images
+ * used by the dev labs satisfy this without being persisted assets. */
+export interface ImageRef {
   src: string
   width: number
   height: number
+}
+
+/** An image the customer supplied. `width`/`height` describe the (possibly
+ * downscaled) working copy the canvas draws; `sourceWidth`/`sourceHeight` are
+ * the original file's pixel size, kept so print quality can be judged against
+ * what the customer actually uploaded. `assetId` keys the persisted blob. */
+export interface UploadedImage extends ImageRef {
+  assetId: string
+  sourceWidth: number
+  sourceHeight: number
+}
+
+export interface WallImage extends UploadedImage {
   /** Reserved for a future per-pixel occlusion mask (e.g. furniture in front
    * of the wall) so frames can be clipped where they'd otherwise render on
    * top of foreground objects. Unused today — see lib/occlusion.ts. */
   occlusionMaskSrc?: string | null
 }
 
-export interface PhotoAsset {
-  src: string
-  width: number
-  height: number
-}
+export type PhotoAsset = UploadedImage
 
 export interface PhotoTransform {
   offsetX: number
@@ -67,18 +80,51 @@ export interface PerspectiveCorners {
   bottomLeft: { x: number; y: number }
 }
 
-export interface FrameInstance {
+/** A point on the placement surface in unit space: (0,0) is its top-left,
+ * (1,1) its bottom-right. The surface is the whole wall photo in free mode,
+ * or the customer-marked wall region in wall-surface mode. Because it's
+ * normalized, an anchor survives changes to the photo, the region, or the
+ * wall-width calibration. */
+export interface SurfaceAnchor {
+  xPct: number
+  yPct: number
+}
+
+/**
+ * What the customer designed for one frame. This — not the pixel geometry
+ * below — is the source of truth; geometry is always re-derivable from it
+ * (see domain/placement.ts).
+ */
+export interface FrameDesign {
   id: string
+  /** The layout slot this frame came from, or a custom id for added frames. */
   slotId: string
+  /** Where the frame's center sits on the placement surface. */
+  anchor: SurfaceAnchor
+  /** In-plane tilt in degrees (collage layouts tilt some frames). */
+  tilt: number
+  productId: string
+  sizeId: string
+  orientation: Orientation
+  glassId: GlassId
+  matId: MatId
+}
+
+/** Pixel geometry derived from a FrameDesign for the current wall/scale. */
+export interface FrameGeometry {
+  /** Center of the frame in wall-image pixels. */
   x: number
   y: number
+  /** Flat (un-warped) outer size in wall-image pixels. */
   width: number
   height: number
   rotation: number
-  styleId: string
+  perspective?: PerspectiveCorners
+}
+
+export interface FrameInstance extends FrameDesign, FrameGeometry {
   photo: PhotoAsset | null
   photoTransform: PhotoTransform
-  perspective?: PerspectiveCorners
 }
 
 export interface LayoutSlot {
@@ -106,8 +152,12 @@ export interface LayoutDefinition {
   description: string
   /** Wall orientation this arrangement was designed for; purely advisory metadata shown in the UI. */
   allowedOrientation: 'landscape' | 'portrait' | 'any'
-  defaultStyleId: string
+  defaultProductId: string
   spacing: 'tight' | 'normal' | 'relaxed'
+  /** Slots give each frame's CENTER and tilt, plus a suggested footprint
+   * (wPct × hPct of the placement surface). The suggested footprint only
+   * seeds which physical size is chosen; the frame's real size then comes
+   * from the catalog SKU, never from the slot. */
   slots: LayoutSlot[]
   decorativeElements?: DecorativeElement[]
 }
