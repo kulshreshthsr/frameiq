@@ -1,0 +1,24 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--ink);
+}
+
+.dark {
+  color: var(--on-dark);
+}
+
+.mark {
+  flex: 0 0 auto;
+}
+
+.word {
+  font-family: var(--font-sans);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: inherit;
+  white-space: nowrap;
+}

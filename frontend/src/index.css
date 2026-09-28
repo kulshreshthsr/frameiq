@@ -1,27 +1,43 @@
 /*
- * Design tokens and shared primitives.
+ * Design tokens and shared primitives — the DECORYL brand system.
  *
- * Direction: a premium interior-design brand, not a dashboard — warm paper
- * tones, near-black ink, one terracotta accent used sparingly, a serif for
- * headings and the system sans for everything you tap. Flat surfaces and
- * hairline borders; depth comes from a soft shadow, never from gradients.
+ * Direction: deep navy and warm gold (from the DECORYL mark) as real
+ * structural brand colors, not decoration — ink, buttons and focus states
+ * are navy; gold is reserved for selective highlights. Two gold tones exist
+ * on purpose: --accent is darkened for AA text contrast on light paper,
+ * --gold-bright is the louder, more luminous tone used only on dark navy
+ * surfaces where it doesn't need to carry body-text contrast. Flat surfaces
+ * and hairline borders; depth comes from a soft shadow, never gradients.
  */
 :root {
-  --paper: #f6f2ea;
-  --paper-2: #ece6d9;
-  --card: #fbf9f4;
-  --ink: #211c17;
-  --ink-2: #4f473e;
-  --ink-3: #6b6256;
-  --line: #ddd5c7;
-  --line-strong: #bfb3a0;
-  --accent: #9a4a2a;
-  --accent-soft: #f0e0d5;
-  --ok: #45663a;
+  --paper: #f7f4ee;
+  --paper-2: #ede6d7;
+  --card: #fffdf9;
+  --ink: #17273d;
+  --ink-2: #3d5066;
+  --ink-3: #69788b;
+  --line: #ddd5c3;
+  --line-strong: #c1b6a0;
+  --accent: #8a6d2a;
+  --accent-soft: #f1e4c4;
+  --gold-bright: #c89b4a;
+  --ok: #3f6b4a;
   --danger: #a3362b;
   --danger-soft: #f7e6e3;
 
-  --font-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'URW Palladio L', P052, 'Book Antiqua', Georgia, serif;
+  /* Dark, "immersive" section surfaces — alternated against --paper for
+     visual rhythm; not used for body text on light backgrounds. */
+  --surface-dark: #15243a;
+  --surface-dark-2: #1e3350;
+  --on-dark: #f5f1e7;
+  --on-dark-2: #b9c2ce;
+  --on-dark-line: rgba(245, 241, 231, 0.14);
+
+  /* Fraunces (loaded in index.html) first, so every existing heading that
+     already uses --font-serif picks up the new display face for free; the
+     old system-serif stack stays as the fallback while the webfont loads
+     (or if it fails to). */
+  --font-serif: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Palatino, 'URW Palladio L', P052, 'Book Antiqua', Georgia, serif;
   --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
 
   --radius: 10px;
@@ -111,6 +127,7 @@ button {
   border: 1px solid transparent;
   font-size: 15px;
   font-weight: 600;
+  text-decoration: none;
   letter-spacing: 0.01em;
   line-height: 1.2;
   text-align: center;
@@ -130,7 +147,7 @@ button {
 }
 
 .btnPrimary:hover:not(:disabled) {
-  background: #3a322a;
+  background: #233a56;
 }
 
 .btnSecondary {
