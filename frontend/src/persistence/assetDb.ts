@@ -10,6 +10,8 @@
  * Keeping them apart means cleaning up one can never disturb the other.
  */
 
+// Not renamed for the DECORYL rebrand: changing an IndexedDB name orphans
+// any photos already stored under it for returning visitors.
 const DB_NAME = 'framengine'
 const DB_VERSION = 2
 

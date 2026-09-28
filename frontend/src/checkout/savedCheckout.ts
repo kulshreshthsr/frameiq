@@ -1,6 +1,8 @@
 /** The localStorage key checkout progress is saved under. Kept in its own tiny
  * module so the app shell can ask "is there a checkout to resume?" without
- * loading the checkout code (and its validation library) to find out. */
+ * loading the checkout code (and its validation library) to find out.
+ * Not renamed for the DECORYL rebrand — would orphan any checkout already
+ * in progress for a returning visitor. */
 export const CHECKOUT_STORAGE_KEY = 'framengine.checkout'
 
 export function hasSavedCheckout(): boolean {

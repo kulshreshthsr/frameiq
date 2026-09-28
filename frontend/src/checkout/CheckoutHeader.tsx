@@ -1,3 +1,4 @@
+import { DecorylLogo } from '../components/brand/DecorylLogo'
 import { CHECKOUT_STAGES, useCheckoutStore, type CheckoutStage } from './checkoutStore'
 import styles from './checkout.module.css'
 
@@ -19,7 +20,9 @@ export function CheckoutHeader({ onBackToDesign }: CheckoutHeaderProps) {
 
   return (
     <header className={styles.header}>
-      <div className={styles.brand}>Frame Engine</div>
+      <div className={styles.brand}>
+        <DecorylLogo size={24} />
+      </div>
       <nav aria-label="Checkout progress" className={styles.progress}>
         <ol className={styles.progressList}>
           {CHECKOUT_STAGES.map((s, i) => (

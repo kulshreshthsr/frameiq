@@ -18,7 +18,7 @@ export function AdminShell({ route, children }: { route: AdminRoute; children: R
   return (
     <div className={styles.shell} data-testid="admin-shell">
       <nav className={styles.nav} aria-label="Admin">
-        <span className={styles.navBrand}>Frame Engine — Admin</span>
+        <span className={styles.navBrand}>Decoryl — Admin</span>
         {NAV.map((item) => (
           <Link key={item.to} to={item.to} className={`${styles.navLink} ${item.route.includes(route.name) ? styles.navLinkActive : ''}`} aria-current={item.route.includes(route.name) ? 'page' : undefined}>
             {item.label}

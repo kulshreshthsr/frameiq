@@ -14,6 +14,9 @@ import { sanitizeWallWidthCm } from '../domain/sizing'
  */
 
 export const DRAFT_VERSION = 1
+// Not renamed for the DECORYL rebrand on purpose: this is the localStorage
+// key existing visitors' in-progress designs are saved under. Changing it
+// would silently orphan any draft saved before the rename.
 export const DRAFT_STORAGE_KEY = 'framengine.draft'
 const MAX_FRAMES = 24
 

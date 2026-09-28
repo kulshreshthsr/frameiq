@@ -93,8 +93,8 @@ export function CompareReveal({ wall, viewportScale, showDivider, children }: Co
             listening={false}
           />
           {/* Two small chevrons pointing outward from the centre. */}
-          <Line points={[-8 / viewportScale, wall.height / 2 - 6 / viewportScale, -13 / viewportScale, wall.height / 2, -8 / viewportScale, wall.height / 2 + 6 / viewportScale]} stroke="#211c17" strokeWidth={2 / viewportScale} lineCap="round" lineJoin="round" listening={false} />
-          <Line points={[8 / viewportScale, wall.height / 2 - 6 / viewportScale, 13 / viewportScale, wall.height / 2, 8 / viewportScale, wall.height / 2 + 6 / viewportScale]} stroke="#211c17" strokeWidth={2 / viewportScale} lineCap="round" lineJoin="round" listening={false} />
+          <Line points={[-8 / viewportScale, wall.height / 2 - 6 / viewportScale, -13 / viewportScale, wall.height / 2, -8 / viewportScale, wall.height / 2 + 6 / viewportScale]} stroke="#17273d" strokeWidth={2 / viewportScale} lineCap="round" lineJoin="round" listening={false} />
+          <Line points={[8 / viewportScale, wall.height / 2 - 6 / viewportScale, 13 / viewportScale, wall.height / 2, 8 / viewportScale, wall.height / 2 + 6 / viewportScale]} stroke="#17273d" strokeWidth={2 / viewportScale} lineCap="round" lineJoin="round" listening={false} />
         </Group>
       )}
     </>

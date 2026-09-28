@@ -64,9 +64,9 @@ export async function openRazorpay(launch: RazorpayLaunch): Promise<void> {
     order_id: launch.providerOrderId,
     amount: launch.amountMinor,
     currency: launch.currency,
-    name: 'Frame Engine',
+    name: 'Decoryl',
     prefill: launch.prefill,
-    theme: { color: '#211c17' },
+    theme: { color: '#17273d' },
     handler: (result: RazorpayResult) => launch.onSuccess(result),
     modal: { ondismiss: launch.onDismiss },
   })
