@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { apiFor, createOwner, createTestServer, loginOwner, type TestServer } from '../test/harness.ts'
 import { hashPassword, verifyPassword } from './password.ts'
+import { pruneExpiredSessions } from './session.ts'
 
 let server: TestServer
 
@@ -153,5 +154,21 @@ describe('login rate limiting', () => {
       if (response.response.status === 429) sawTooMany = true
     }
     expect(sawTooMany).toBe(true)
+  })
+})
+
+describe('pruneExpiredSessions', () => {
+  it('removes only the sessions that have actually expired', async () => {
+    await createOwner(server, { email: 'owner@shop.example', password: 'a-strong-password-1' })
+    const { session: oldSession } = await loginOwner(server, 'owner@shop.example', 'a-strong-password-1')
+
+    server.clock.now = new Date(server.clock.now.getTime() + 13 * 60 * 60 * 1000) // past the 12h session TTL
+    const { session: freshSession } = await loginOwner(server, 'owner@shop.example', 'a-strong-password-1') // a brand-new, still-valid one
+
+    const removed = await pruneExpiredSessions(server.ctx)
+    expect(removed).toBe(1) // just the old one
+
+    expect((await apiFor(server).get('/api/admin/dashboard', oldSession.headers())).status).toBe(401)
+    expect((await apiFor(server).get('/api/admin/dashboard', freshSession.headers())).status).toBe(200)
   })
 })

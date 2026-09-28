@@ -1,5 +1,6 @@
 import { serve } from '@hono/node-server'
 import { createApp } from './app.ts'
+import { pruneExpiredSessions } from './auth/session.ts'
 import { buildContext } from './bootstrap.ts'
 import { ConfigError, loadConfig } from './config.ts'
 import { loadEnvFile } from './env.ts'
@@ -40,9 +41,15 @@ async function main() {
   void pump()
   const timer = setInterval(pump, 30_000)
 
+  // Expired admin sessions are already refused the moment they're presented
+  // (see auth/session.ts); this just keeps the table from growing forever.
+  const pruneSessions = () => pruneExpiredSessions(ctx).catch((error) => ctx.log.error('sessions.prune_failed', { message: String(error?.message ?? error) }))
+  const sessionTimer = setInterval(pruneSessions, 60 * 60 * 1000)
+
   const shutdown = (signal: string) => {
     ctx.log.event('server.stopping', { signal })
     clearInterval(timer)
+    clearInterval(sessionTimer)
     server.close(() => process.exit(0))
     setTimeout(() => process.exit(0), 5000).unref()
   }

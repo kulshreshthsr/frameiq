@@ -176,6 +176,19 @@ describe('GET /api/admin/orders', () => {
     const response = await api.get('/api/admin/orders/FRM-2026-999999', auth())
     expect(response.status).toBe(404)
   })
+
+  it('pages through orders newest-first with `before`, with no gaps or repeats', async () => {
+    const ids: string[] = []
+    for (let i = 0; i < 3; i++) {
+      const { json } = await placeOrder(server, await buildOrder(server, [{}], { key: `idem-page-${i}-aaaaaaaaaa` }))
+      ids.push(json.order.publicOrderId)
+      server.clock.now = new Date(server.clock.now.getTime() + 1000) // distinct createdAt, so order is deterministic
+    }
+    const first = await get('/api/admin/orders?limit=2', auth())
+    expect(first.orders.map((o: { publicOrderId: string }) => o.publicOrderId)).toEqual([ids[2], ids[1]]) // newest first
+    const second = await get(`/api/admin/orders?limit=2&before=${first.orders[1].publicOrderId}`, auth())
+    expect(second.orders.map((o: { publicOrderId: string }) => o.publicOrderId)).toEqual([ids[0]])
+  })
 })
 
 describe('an admin-driven price change never touches an existing order, and only future orders see it', () => {
