@@ -1,0 +1,87 @@
+/*
+ * The marketing landing page — everything below the hero. One shared
+ * stylesheet across its sections (matching the convention in Journey.module.css
+ * for the configurator steps), so spacing, section rhythm and headings stay
+ * consistent without redeclaring them per component.
+ *
+ * This extends the app's existing tokens (index.css) rather than replacing
+ * them — same warm paper/ink palette, same restraint. The only new pattern
+ * here is alternating section backgrounds (paper / card) to give the long
+ * page rhythm without borders or cards-on-cards.
+ */
+
+.page {
+  display: flex;
+  flex-direction: column;
+}
+
+.section {
+  padding: 88px 24px;
+}
+
+.sectionTight {
+  padding: 64px 24px;
+}
+
+.band {
+  background: var(--card);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.inner {
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.sectionHead {
+  max-width: 640px;
+  margin: 0 0 44px;
+}
+
+.sectionHeadCenter {
+  max-width: 560px;
+  margin: 0 auto 44px;
+  text-align: center;
+}
+
+.sectionEyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.sectionTitle {
+  font-family: var(--font-serif);
+  font-size: clamp(26px, 3vw, 36px);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+
+.sectionLead {
+  margin-top: 12px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+
+@media (max-width: 720px) {
+  .section {
+    padding: 56px 20px;
+  }
+
+  .sectionTight {
+    padding: 44px 20px;
+  }
+
+  .sectionHead,
+  .sectionHeadCenter {
+    margin-bottom: 32px;
+  }
+}

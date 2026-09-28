@@ -1,31 +1,56 @@
-import { WallUploader } from '../WallUploader/WallUploader'
+import { Suspense, lazy, useEffect } from 'react'
+import { Faq } from './landing/Faq'
+import { FinalCta } from './landing/FinalCta'
+import { Hero } from './landing/Hero'
+import { HowItWorks } from './landing/HowItWorks'
+import { LandingFooter } from './landing/LandingFooter'
+import { LayoutsShowcase } from './landing/LayoutsShowcase'
+import { StartSection } from './landing/StartSection'
+import { WhySection } from './landing/WhySection'
 import styles from './Landing.module.css'
 
-/** The first screen. It has one job: make the promise obvious ("see your
- * photos framed on your own wall") and put the first step right under the
- * customer's thumb. */
+// FrameStylesShowcase draws real frames with the same Konva-based renderer
+// the configurator uses (`FrameSwatch`) — genuine, but Konva is the heaviest
+// dependency in the app, and Workspace already loads it lazily so a first
+// visit stays fast. Loading it here eagerly would undo that for every
+// visitor, even ones who never get past the hero. Split the same way, and
+// (also like Workspace) start fetching it in the background once the page
+// is up, so it's usually ready by the time someone scrolls to it.
+const loadFrameStyles = () => import('./landing/FrameStylesShowcase')
+const FrameStylesShowcase = lazy(() => loadFrameStyles().then((m) => ({ default: m.FrameStylesShowcase })))
+
+/**
+ * The marketing page a first-time visitor sees — everything before there's a
+ * wall to work on (`App.tsx` swaps this for the real `Workspace` the moment
+ * `wall` is set). The product itself is the hero (`Hero`'s before/after
+ * demonstration), with the real upload entry point (`StartSection`,
+ * unchanged from before this redesign) as the very next thing, not buried
+ * under marketing copy.
+ *
+ * Every claim and visual below the hero is backed by something real in the
+ * app — real layouts (`LayoutsShowcase`), the real catalog rendered with the
+ * real frame-drawing code (`FrameStylesShowcase`), real product behaviour
+ * (`WhySection`, `Faq`) — rather than stock photography or invented social
+ * proof, neither of which this product has.
+ */
 export function Landing() {
+  useEffect(() => {
+    void loadFrameStyles()
+  }, [])
+
   return (
     <div className={styles.landing}>
-      <div className={styles.inner}>
-        <div className={styles.copy}>
-          <p className="eyebrow">Custom frames</p>
-          <h1 className={styles.headline}>See your photos framed on your own wall.</h1>
-          <p className={styles.lede}>
-            Upload a photo of your wall, add your pictures, and choose your frames. You’ll see exactly how they’ll look — in the right
-            sizes, with the price as you go.
-          </p>
-          <ol className={styles.steps}>
-            <li>Upload your wall</li>
-            <li>Add your photos</li>
-            <li>See it framed</li>
-          </ol>
-          <p className={styles.privacy}>Your photos stay on your device.</p>
-        </div>
-        <div className={styles.upload}>
-          <WallUploader />
-        </div>
-      </div>
+      <Hero />
+      <StartSection />
+      <HowItWorks />
+      <LayoutsShowcase />
+      <Suspense fallback={null}>
+        <FrameStylesShowcase />
+      </Suspense>
+      <WhySection />
+      <Faq />
+      <FinalCta />
+      <LandingFooter />
     </div>
   )
 }
