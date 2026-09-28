@@ -5,10 +5,17 @@ import { existsSync, readFileSync } from 'node:fs'
  * Reads KEY=VALUE lines, ignores comments and blanks, strips surrounding
  * quotes, and never overrides a variable that is already set — so real
  * environment variables always win over the file.
+ *
+ * `backend/` is a workspace: every script that calls this (`server/index.ts`,
+ * `scripts/*`) runs with its cwd set to `backend/` (`npm run … --workspace=backend`),
+ * but `.env` conventionally lives at the repo root next to `.env.example`. So
+ * this checks `./.env` first (lets a `backend/.env` override, if one is ever
+ * added) and falls back to the monorepo root's `../.env`.
  */
-export function loadEnvFile(path = '.env', target: Record<string, string | undefined> = process.env): void {
-  if (!existsSync(path)) return
-  for (const rawLine of readFileSync(path, 'utf8').split(/\r?\n/)) {
+export function loadEnvFile(path?: string, target: Record<string, string | undefined> = process.env): void {
+  const candidate = path ?? (existsSync('.env') ? '.env' : '../.env')
+  if (!existsSync(candidate)) return
+  for (const rawLine of readFileSync(candidate, 'utf8').split(/\r?\n/)) {
     const line = rawLine.trim()
     if (!line || line.startsWith('#')) continue
     const eq = line.indexOf('=')
