@@ -6,8 +6,12 @@ import { addPhotos, chooseLayout, next, openApp, uploadWall } from './journey'
 
 /** Helpers for driving the ordering flow the way a customer does. */
 
-export const PACKAGES_DIR = './data/e2e/packages'
-export const E2E_DB = 'file:./data/e2e/e2e.db'
+// The e2e backend runs with its cwd set to backend/ (see playwright.config.ts's
+// webServer, which uses `npm run e2e:server --workspace=backend`), so its
+// relative `./data/e2e` lands there — these paths, read from the repo root
+// where Playwright itself runs, have to match that.
+export const PACKAGES_DIR = './backend/data/e2e/packages'
+export const E2E_DB = 'file:./backend/data/e2e/e2e.db'
 export const SANDBOX_SECRET = 'e2e-sandbox-secret'
 
 export const CUSTOMER = { name: 'Asha Rao', mobile: '98765 43210' }

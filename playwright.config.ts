@@ -42,7 +42,7 @@ export default defineConfig({
   // The REAL server — API, database, sandbox payments — serving the REAL
   // production build, with a fresh database each run (see scripts/e2e-server.ts).
   webServer: {
-    command: 'npm run build && npx tsx scripts/e2e-server.ts',
+    command: 'npm run build --workspace=frontend && npm run e2e:server --workspace=backend',
     url: `http://localhost:${PORT}/api/health`,
     reuseExistingServer: false,
     timeout: 240_000,

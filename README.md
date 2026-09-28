@@ -4,6 +4,8 @@ A mobile-first configurator and ordering system for custom wall frames. A custom
 
 Guest checkout only: there are no accounts.
 
+The frontend (`frontend/`) and backend (`backend/`) are separate npm workspaces with their own `package.json` — each can be built and deployed independently — sharing one `shared/` folder of pricing/catalog/validation code so the two can never disagree (see "How it's organised"). `npm install` at the repo root installs both; every command below still runs from the root exactly as shown.
+
 > **Status: ready for a real launch _except_ real payments.** Payments run against a built-in **sandbox** provider (no money moves). A Razorpay adapter is written and unit-tested, but it has **not** been run against Razorpay's live or test API — see [Going live](#going-live) before charging anyone.
 
 ## Run it
@@ -29,7 +31,7 @@ node dist-server/index.js     # (npm start) — needs the production environment
 ## Verify it
 
 ```bash
-npm run typecheck    # app + server + e2e
+npm run typecheck    # frontend + backend + e2e (delegates into each workspace)
 npm run lint
 npm test             # unit, component and backend tests (Vitest)
 npm run test:e2e     # browser tests (Playwright) — builds the site and starts the real backend
@@ -118,25 +120,36 @@ Read this before charging real money.
 4. Replace the placeholder catalog and delivery policy; only then switch to live keys.
 5. Run behind HTTPS and back up `DATABASE_URL`, `UPLOADS_DIR` and `PACKAGES_DIR`.
 
+## Deploying frontend and backend separately
+
+They need two different kinds of host: the frontend is a static build (Vercel, Netlify, any static host); the backend is a long-running Node process that owns the database and every `/api/*` route (Vercel's default setup does **not** run it — deploying only the frontend there is why `/admin` and `/api/*` will 404 on a Vercel-only deployment).
+
+- **Frontend on Vercel**: set the project's **Root Directory** to `frontend/`, and turn on **"Include files outside the Root Directory in the Build"** (a real Vercel project setting, needed because the build reads `../shared/*`). Build command `npm run build`, output `dist`.
+- **Backend**: needs a host that runs a persistent Node process with a writable disk (for the SQLite file and uploads) — recommendations for exactly where are a separate step from this restructuring; ask if you want them now.
+
 ## How it's organised
 
 | Area | What lives there |
 |---|---|
-| `shared/` | Code used by browser **and** server so they can't disagree: money, catalog types and validation, **pricing**, the design-snapshot schema, customer/delivery rules, production-image checks, the admin domain types and request validation |
-| `server/` | The Hono API: orders, uploads, payments (provider abstraction + sandbox + Razorpay), catalog, production package, notification outbox, migrations, structured logging |
-| `server/auth/` | Password hashing, cookie sessions + CSRF, the OWNER-only auth middleware |
-| `server/catalog/adminCatalogRepo.ts` | The only write path for products/sizes: validated, versioned (optimistic concurrency), audited |
-| `server/admin/` | The `/api/admin/*` routes and the dashboard query |
-| `scripts/` | `db-seed`, `admin:create`, `order-package`, and the Playwright test server |
-| `src/domain/` | Frontend product model — a registry over the catalog, physical sizing/placement, print quality |
-| `src/state/`, `src/persistence/` | Zustand stores; draft saving (localStorage + IndexedDB) |
-| `src/order/` | Snapshot builder, crop maths, original-image store, API client |
-| `src/checkout/` | The ordering flow: state, persistence, forms, payment, confirmation |
-| `src/admin/` | The owner admin app — its own router, API client and pages. Imports nothing from `src/checkout` or `src/order`, and nothing outside `src/admin` imports from it; `src/main.tsx` loads one or the other by URL |
-| `src/components/` | Customer-facing UI. `CanvasStage/` is the Konva renderer; `Journey/` the design steps; `dev/` developer tools |
+| `shared/` | Code used by browser **and** server so they can't disagree: money, catalog types and validation, **pricing**, the design-snapshot schema, customer/delivery rules, production-image checks, the admin domain types and request validation. Lives at the repo root — not inside `frontend/` or `backend/` — and is never duplicated; both import it by relative path, one level up |
+| `backend/` | Its own `package.json` (Hono, `@libsql/client`, no frontend deps) |
+| `backend/server/` | The Hono API: orders, uploads, payments (provider abstraction + sandbox + Razorpay), catalog, production package, notification outbox, migrations, structured logging |
+| `backend/server/auth/` | Password hashing, cookie sessions + CSRF, the OWNER-only auth middleware |
+| `backend/server/catalog/adminCatalogRepo.ts` | The only write path for products/sizes: validated, versioned (optimistic concurrency), audited |
+| `backend/server/admin/` | The `/api/admin/*` routes and the dashboard query |
+| `backend/scripts/` | `db-seed`, `admin-create`, `order-package`, and the Playwright test server |
+| `frontend/` | Its own `package.json` (React, Vite, Konva, zustand, no backend deps) |
+| `frontend/src/domain/` | Frontend product model — a registry over the catalog, physical sizing/placement, print quality |
+| `frontend/src/state/`, `frontend/src/persistence/` | Zustand stores; draft saving (localStorage + IndexedDB) |
+| `frontend/src/order/` | Snapshot builder, crop maths, original-image store, API client |
+| `frontend/src/checkout/` | The ordering flow: state, persistence, forms, payment, confirmation |
+| `frontend/src/admin/` | The owner admin app — its own router, API client and pages. Imports nothing from `checkout`/`order`, and nothing outside it imports from it; `frontend/src/main.tsx` loads one or the other by URL |
+| `frontend/src/components/` | Customer-facing UI. `CanvasStage/` is the Konva renderer; `Journey/` the design steps; `dev/` developer tools |
+| `e2e/` | Playwright — exercises the whole system over HTTP; belongs to neither side, stays at the root |
 
 ### Ideas worth knowing before you change things
 
+- **`shared/` never moves into `frontend/` or `backend/`, and never gets a copy in each.** It's imported by relative path from both (`../shared/...` from inside either workspace) specifically so pricing and validation can't drift into disagreeing. The production backend bundle doesn't need it present at runtime — `esbuild --bundle` inlines it into `dist-server/index.js` — but the *build* does, so a host building `backend/` needs the full repo checked out with its build directory set to `backend/`, not just that folder copied in isolation.
 - **Money is integer paise.** Never do arithmetic on formatted prices. Pricing lives in `shared/pricing.ts` and runs identically in the browser and on the server.
 - **The frozen snapshot is the only design checkout looks at.** Don't read the composition store from checkout code.
 - **"Paid" is only ever a server fact.** The client's job is to ask, patiently, and to say so honestly when it can't tell yet.
@@ -144,7 +157,7 @@ Read this before charging real money.
 - **Placement = anchor + size + scale.** A layout slot says where; the catalog says how big; the customer's wall width sets the scale. See `domain/placement.ts`.
 - **Developer tools** (Frame Style Lab, Realism Lab) exist only in `npm run dev`.
 - **A product/size write is validated as a whole catalog, not a field.** `adminCatalogRepo.ts` re-runs `validateCatalog` on the resulting catalog inside the same transaction as the write, so it inherits every invariant (unique ids, positive prices, at least one active size) for free — a new rule added there protects admin edits automatically, no separate admin-side validation to keep in sync.
-- **`src/main.tsx`'s two branches must stay structurally different** (an early `return`, not an `if`/`else` with the same shape in both arms) — see the comment there. It's the only thing stopping the production minifier from merging the customer and admin dynamic imports, which would load both bundles' CSS on every page. Verify with a network trace on `/admin` after touching it.
+- **`frontend/src/main.tsx`'s two branches must stay structurally different** (an early `return`, not an `if`/`else` with the same shape in both arms) — see the comment there. It's the only thing stopping the production minifier from merging the customer and admin dynamic imports, which would load both bundles' CSS on every page. Verify with a network trace on `/admin` after touching it.
 
 ## Known limits
 
