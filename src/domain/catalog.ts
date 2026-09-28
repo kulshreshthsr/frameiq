@@ -99,13 +99,24 @@ export function findSku(productId: string, sizeId: string): FrameSku | undefined
 
 const DEFAULT_SIZE_ID = '12x18'
 
-export function defaultSkuFor(product: FrameProduct): FrameSku {
-  return product.sizes.find((sku) => sku.id === DEFAULT_SIZE_ID) ?? product.sizes[0]
+/** Only sizes a NEW design may be started or configured with — an owner
+ * deactivating a size must stop it being newly chosen, without touching
+ * anything already designed with it (that stays visible until the customer
+ * picks something else; see `nearestAvailableSku`). */
+export function sellableSizes(product: FrameProduct): FrameSku[] {
+  const active = product.sizes.filter((sku) => sku.active)
+  return active.length > 0 ? active : product.sizes
 }
 
-/** Lowest price the product is sold at — for "From ₹399" style labels. */
+export function defaultSkuFor(product: FrameProduct): FrameSku {
+  const offered = sellableSizes(product)
+  return offered.find((sku) => sku.id === DEFAULT_SIZE_ID) ?? offered[0]
+}
+
+/** Lowest price the product is currently sold at — for "From ₹399" style
+ * labels. Only counts sizes a new order could actually use. */
 export function startingPriceMinor(product: FrameProduct): Minor {
-  return Math.min(...product.sizes.map((sku) => sku.priceMinor))
+  return Math.min(...sellableSizes(product).map((sku) => sku.priceMinor))
 }
 
 export function getGlassOption(id: string): GlassOption {

@@ -1,7 +1,7 @@
 import { useCompositionStore } from '../../../state/compositionStore'
 import { useUIStore } from '../../../state/uiStore'
 import { useJourneyStore } from '../../../state/journeyStore'
-import { getGlassOption, getMatOption, getProduct, productShipsWithMat, type GlassId, type MatId } from '../../../domain/catalog'
+import { getGlassOption, getMatOption, getProduct, productShipsWithMat, sellableSizes, type GlassId, type MatId } from '../../../domain/catalog'
 import { formatMoney } from '../../../../shared/money'
 import { formatSkuCm, formatSkuInches, isSquareSku, nearestAvailableSku } from '../../../domain/sizing'
 import { assessFramePhoto, commonValue } from '../../../lib/frameSelection'
@@ -11,6 +11,17 @@ import { FrameStrip } from '../../shared/FrameStrip'
 import { PhotoQualityNote } from '../../shared/PhotoQualityNote'
 import { QuoteSummary } from '../../shared/QuoteSummary'
 import styles from '../Journey.module.css'
+import type { FrameProduct, FrameSku } from '../../../domain/catalog'
+
+/** What to offer in the size picker: everything currently sellable, plus
+ * whatever is already chosen (even if the owner has since made it inactive)
+ * so a design in progress doesn't have its selection silently vanish. */
+function sizesToOffer(product: FrameProduct, currentSizeId: string | null): FrameSku[] {
+  const offered = sellableSizes(product)
+  if (!currentSizeId || offered.some((s) => s.id === currentSizeId)) return offered
+  const already = product.sizes.filter((s) => s.id === currentSizeId)
+  return [...offered, ...already]
+}
 
 export function Step5SizePrice() {
   const frames = useCompositionStore((s) => s.frames)
@@ -78,7 +89,7 @@ export function Step5SizePrice() {
             Size <span className={styles.sectionScope}>· {scopeName}</span>
           </h3>
           <div className={styles.sizeGrid} role="radiogroup" aria-label={`Size for ${scopeName}`}>
-            {product.sizes.map((sku) => {
+            {sizesToOffer(product, currentSizeId).map((sku) => {
               const isActive = sku.id === currentSizeId
               const orientation = selectedFrame && !isSquareSku(sku) ? selectedFrame.orientation : 'portrait'
               return (

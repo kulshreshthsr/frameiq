@@ -14,10 +14,12 @@ import {
   hasProduct,
   productShipsWithMat,
   resetCatalogForTests,
+  sellableSizes,
   setCatalog,
   startingPriceMinor,
   subscribeCatalog,
 } from './catalog'
+import { nearestAvailableSku } from './sizing'
 import { resolveFrameStyle } from './frameStyle'
 
 afterEach(() => resetCatalogForTests())
@@ -80,6 +82,37 @@ describe('the browser catalog registry', () => {
     expect(defaultMatFor(getProduct('white'))).toBe('mat')
     expect(defaultMatFor(getProduct('matte-black'))).toBe('none')
     expect(productShipsWithMat(getProduct('white'))).toBe(true)
+  })
+
+  it('a deactivated size is not sellable, but the product is unaffected if others remain', () => {
+    const withInactive = { ...SEED_CATALOG, products: SEED_CATALOG.products.map((p) => (p.id === 'walnut' ? { ...p, sizes: p.sizes.map((s) => (s.id === '12x18' ? { ...s, active: false } : s)) } : p)) }
+    setCatalog(withInactive)
+    expect(sellableSizes(getProduct('walnut')).map((s) => s.id)).not.toContain('12x18')
+    expect(hasProduct('walnut')).toBe(true) // the product itself is still fine
+  })
+
+  it('the default size skips a deactivated one', () => {
+    const withInactive = { ...SEED_CATALOG, products: SEED_CATALOG.products.map((p) => (p.id === 'walnut' ? { ...p, sizes: p.sizes.map((s) => (s.id === '12x18' ? { ...s, active: false } : s)) } : p)) }
+    setCatalog(withInactive)
+    expect(defaultSkuFor(getProduct('walnut')).id).not.toBe('12x18')
+  })
+
+  it('"from" pricing never advertises a size that can no longer be bought', () => {
+    const cheapestDeactivated = { ...SEED_CATALOG, products: SEED_CATALOG.products.map((p) => (p.id === 'matte-black' ? { ...p, sizes: p.sizes.map((s) => (s.id === '8x10' ? { ...s, active: false } : s)) } : p)) }
+    setCatalog(cheapestDeactivated)
+    expect(startingPriceMinor(getProduct('matte-black'))).toBeGreaterThan(39900) // no longer the (now inactive) cheapest size
+  })
+
+  it('a frame already using a since-deactivated size keeps it (checkout is what actually blocks it)', () => {
+    const withInactive = { ...SEED_CATALOG, products: SEED_CATALOG.products.map((p) => (p.id === 'walnut' ? { ...p, sizes: p.sizes.map((s) => (s.id === '12x18' ? { ...s, active: false } : s)) } : p)) }
+    setCatalog(withInactive)
+    expect(nearestAvailableSku(getProduct('walnut'), '12x18').id).toBe('12x18')
+  })
+
+  it('choosing a size fresh (no exact match at all) only offers what is still sellable', () => {
+    const withInactive = { ...SEED_CATALOG, products: SEED_CATALOG.products.map((p) => (p.id === 'walnut' ? { ...p, sizes: p.sizes.map((s) => (s.id === '12x18' ? { ...s, active: false } : s)) } : p)) }
+    setCatalog(withInactive)
+    expect(nearestAvailableSku(getProduct('walnut'), 'no-such-size-12x18').id).not.toBe('12x18')
   })
 })
 

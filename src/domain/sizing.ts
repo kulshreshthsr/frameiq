@@ -1,5 +1,5 @@
 import { MAX_WALL_WIDTH_CM, MIN_WALL_WIDTH_CM } from '../../shared/limits'
-import type { FrameProduct, FrameSku, Orientation } from './catalog'
+import { sellableSizes, type FrameProduct, type FrameSku, type Orientation } from './catalog'
 
 /**
  * PHYSICAL SIZE MODEL
@@ -105,14 +105,18 @@ export function chooseSizeForSlot(product: FrameProduct, slotWidthCm: number, sl
 }
 
 /** The closest size the product actually offers to a previously chosen
- * size id (used when the product changes or a stale id is restored). */
+ * size id (used when the product changes or a stale id is restored). An
+ * exact match on THIS product is kept even if it has since gone inactive —
+ * that is a design already made, not a new choice, and checkout's own
+ * "item unavailable" check is what actually protects an order. Picking a
+ * size fresh (no exact match — the size doesn't exist on this product at
+ * all) only offers what is currently sellable. */
 export function nearestAvailableSku(product: FrameProduct, sizeId: string): FrameSku {
   const exact = product.sizes.find((sku) => sku.id === sizeId)
   if (exact) return exact
+  const offered = sellableSizes(product)
   const wanted = /^(\d+)x(\d+)$/.exec(sizeId)
-  if (!wanted) return product.sizes[0]
+  if (!wanted) return offered[0]
   const area = Number(wanted[1]) * Number(wanted[2])
-  return product.sizes.reduce((best, sku) =>
-    Math.abs(sku.width * sku.height - area) < Math.abs(best.width * best.height - area) ? sku : best,
-  )
+  return offered.reduce((best, sku) => (Math.abs(sku.width * sku.height - area) < Math.abs(best.width * best.height - area) ? sku : best))
 }
