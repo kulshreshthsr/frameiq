@@ -6,6 +6,7 @@ import { serveStatic } from '@hono/node-server/serve-static'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { z } from 'zod'
+import { mountAdminRoutes } from './admin/routes.ts'
 import { loadCatalog, publicCatalog } from './catalog/catalogRepo.ts'
 import type { AppContext } from './context.ts'
 import { AppError, errors, isAppError } from './errors.ts'
@@ -172,6 +173,12 @@ export function createApp(ctx: AppContext): Hono<Env> {
     ctx.log.event(parsed.data.name, { source: 'browser', frames: parsed.data.frames, totalMinor: parsed.data.totalMinor })
     return c.body(null, 204)
   })
+
+  // ------------------------------------------------------------ owner admin
+  // A separate area entirely: cookie sessions instead of order tokens, and a
+  // much tighter limit on the one unauthenticated route (login) than on
+  // ordinary browsing. See admin/routes.ts.
+  mountAdminRoutes(app, ctx, jsonLimit, limit('adminLogin', Math.min(rateLimit.max, 10)))
 
   app.all('/api/*', () => {
     throw new AppError('NOT_FOUND', 404, 'That isn’t something we can find.')

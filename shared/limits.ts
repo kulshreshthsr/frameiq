@@ -23,3 +23,10 @@ export const MAX_UPLOAD_BYTES = 45 * 1024 * 1024
 /** Aspect ratio of an ORIGINAL may differ from the editing copy it was
  * cropped from by at most this much (rounding, resampling). */
 export const MAX_ASPECT_DRIFT = 0.015
+
+/**
+ * A sanity ceiling on any single catalog price (a size's price, or a
+ * surcharge), in minor units. Guards against a typo in the admin UI (an
+ * extra zero) reaching customers, not a real limit on what a frame can cost.
+ */
+export const MAX_PRICE_MINOR = 100_000_00

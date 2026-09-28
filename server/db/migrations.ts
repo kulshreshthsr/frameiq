@@ -191,4 +191,58 @@ export const MIGRATIONS: Migration[] = [
        )`,
     ],
   },
+  {
+    // Owner admin: accounts, sessions, per-row catalog versioning (for
+    // optimistic concurrency) and a size-level active flag, and the audit
+    // trail every price/product change is written to.
+    id: '002_admin',
+    statements: [
+      `ALTER TABLE catalog_products ADD COLUMN version INTEGER NOT NULL DEFAULT 1`,
+      `ALTER TABLE catalog_products ADD COLUMN updated_at TEXT NOT NULL DEFAULT '1970-01-01T00:00:00.000Z'`,
+      `ALTER TABLE catalog_sizes ADD COLUMN active INTEGER NOT NULL DEFAULT 1`,
+      `ALTER TABLE catalog_sizes ADD COLUMN version INTEGER NOT NULL DEFAULT 1`,
+      `ALTER TABLE catalog_sizes ADD COLUMN updated_at TEXT NOT NULL DEFAULT '1970-01-01T00:00:00.000Z'`,
+
+      `CREATE TABLE users (
+         id TEXT PRIMARY KEY,
+         name TEXT NOT NULL,
+         email TEXT NOT NULL UNIQUE,
+         password_hash TEXT NOT NULL,
+         role TEXT NOT NULL,
+         active INTEGER NOT NULL DEFAULT 1,
+         created_at TEXT NOT NULL,
+         updated_at TEXT NOT NULL,
+         last_login_at TEXT
+       )`,
+      `CREATE TABLE admin_sessions (
+         id TEXT PRIMARY KEY,
+         user_id TEXT NOT NULL REFERENCES users(id),
+         token_hash TEXT NOT NULL UNIQUE,
+         created_at TEXT NOT NULL,
+         expires_at TEXT NOT NULL,
+         last_seen_at TEXT NOT NULL
+       )`,
+      `CREATE INDEX idx_admin_sessions_user ON admin_sessions(user_id)`,
+      // Every product/size field or price change, permanently. Deliberately
+      // append-only: a "revert" adds another row rather than erasing history.
+      `CREATE TABLE catalog_audit_log (
+         id INTEGER PRIMARY KEY AUTOINCREMENT,
+         batch_id TEXT NOT NULL,
+         actor_user_id TEXT NOT NULL,
+         actor_name TEXT NOT NULL,
+         action TEXT NOT NULL,
+         product_id TEXT NOT NULL,
+         product_size_id TEXT,
+         field TEXT NOT NULL,
+         old_value TEXT,
+         new_value TEXT,
+         old_price_minor INTEGER,
+         new_price_minor INTEGER,
+         note TEXT,
+         created_at TEXT NOT NULL
+       )`,
+      `CREATE INDEX idx_catalog_audit_product ON catalog_audit_log(product_id, product_size_id, created_at)`,
+      `CREATE INDEX idx_catalog_audit_batch ON catalog_audit_log(batch_id)`,
+    ],
+  },
 ]

@@ -23,6 +23,7 @@ export const errors = {
   badRequest: (message: string, details?: unknown) => new AppError('BAD_REQUEST', 400, message, details),
   invalidOrder: (message: string, details?: unknown) => new AppError('INVALID_ORDER', 422, message, details),
   unauthorized: () => new AppError('UNAUTHORIZED', 401, 'We couldn’t verify that request.'),
+  forbidden: (message = 'Your account doesn’t have access to this.') => new AppError('FORBIDDEN', 403, message),
   notFound: (what = 'That') => new AppError('NOT_FOUND', 404, `${what} wasn’t found.`),
   conflict: (code: string, message: string, details?: unknown) => new AppError(code, 409, message, details),
   tooLarge: (message: string) => new AppError('PAYLOAD_TOO_LARGE', 413, message),

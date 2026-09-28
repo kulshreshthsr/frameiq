@@ -50,6 +50,7 @@ function sizes(prices: Record<string, number>): SizeDef[] {
     priceMinor: major(prices[spec.id]),
     glassSurchargeMinor: major(spec.glassSurcharge),
     matSurchargeMinor: major(spec.matSurcharge),
+    active: true,
   }))
 }
 

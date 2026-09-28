@@ -49,7 +49,7 @@ export function priceFrame(catalog: Catalog, frame: Pick<ConfiguredFrame, 'produ
   const size = findSize(catalog, frame.productId, frame.sizeId)
   const glass = findGlass(catalog, frame.glassId)
   const mat = findMat(catalog, frame.matId)
-  if (!product || !product.active || !size || !glass || !mat) return null
+  if (!product || !product.active || !size || !size.active || !glass || !mat) return null
   if (!product.glassOptionIds.includes(glass.id) || !product.matOptionIds.includes(mat.id)) return null
 
   let price = size.priceMinor

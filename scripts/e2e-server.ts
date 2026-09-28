@@ -22,6 +22,9 @@ Object.assign(process.env, {
   SANDBOX_WEBHOOK_SECRET: 'e2e-sandbox-secret',
   RATE_LIMIT: 'off',
   WHATSAPP_NUMBER: '910000000000',
+  OWNER_BOOTSTRAP_EMAIL: 'owner@e2e.test',
+  OWNER_BOOTSTRAP_PASSWORD: 'e2e-owner-password',
+  OWNER_BOOTSTRAP_NAME: 'Test Owner',
 })
 
 await import('../server/index.ts')

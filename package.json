@@ -16,6 +16,7 @@
     "test:e2e": "playwright test",
     "test:e2e:update": "playwright test e2e/visual.spec.ts e2e/checkout-visual.spec.ts --update-snapshots",
     "db:seed": "tsx scripts/db-seed.ts",
+    "admin:create": "tsx scripts/admin-create.ts",
     "order:package": "tsx scripts/order-package.ts",
     "preview": "vite preview"
   },

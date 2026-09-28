@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import { canonicalJson } from '../../shared/canonical.ts'
 import { validateCatalog, type Catalog, type GlassOptionDef, type MatOptionDef, type ProductDef, type SizeDef } from '../../shared/catalog.ts'
-import { query, run, withTx, type Db } from '../db/client.ts'
+import { query, run, withTx, type Db, type Executor } from '../db/client.ts'
 
 /**
  * The server owns the catalog: products, sizes, options, prices and the
@@ -18,15 +18,22 @@ export function catalogVersion(catalog: Omit<Catalog, 'version'> | Catalog): str
   return createHash('sha256').update(canonicalJson(content)).digest('hex').slice(0, 12)
 }
 
-export async function isCatalogEmpty(db: Db): Promise<boolean> {
-  const rows = await query(db, 'SELECT COUNT(*) AS n FROM catalog_products')
+export async function isCatalogEmpty(ex: Executor): Promise<boolean> {
+  const rows = await query(ex, 'SELECT COUNT(*) AS n FROM catalog_products')
   return Number(rows[0].n) === 0
 }
 
-/** Replaces the whole stored catalog with `catalog`. Refuses an inconsistent one. */
-export async function saveCatalog(db: Db, catalog: Catalog): Promise<string> {
+/**
+ * Replaces the whole stored catalog with `catalog`. Refuses an inconsistent
+ * one. This is the bulk, development-time tool (`npm run db:seed`) — it
+ * resets every row's version, so it is not how the admin UI changes a price;
+ * that goes through `catalog/adminCatalogRepo.ts`, one row at a time, with
+ * optimistic concurrency and an audit trail.
+ */
+export async function saveCatalog(db: Db, catalog: Catalog, now: Date = new Date()): Promise<string> {
   const problems = validateCatalog(catalog)
   if (problems.length > 0) throw new Error(`Refusing to save an invalid catalog:\n - ${problems.join('\n - ')}`)
+  const nowIso = now.toISOString()
 
   await withTx(db, async (tx) => {
     for (const table of ['catalog_product_options', 'catalog_sizes', 'catalog_products', 'catalog_mat_options', 'catalog_glass_options', 'catalog_settings']) {
@@ -47,16 +54,16 @@ export async function saveCatalog(db: Db, catalog: Catalog): Promise<string> {
     for (const [i, p] of catalog.products.entries()) {
       await run(
         tx,
-        `INSERT INTO catalog_products (id, name, tagline, description, style_id, active, ships_with_mat, moulding_note, production_notes, sort)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [p.id, p.name, p.tagline, p.description, p.styleId, p.active ? 1 : 0, p.shipsWithMat ? 1 : 0, p.mouldingNote ?? null, p.productionNotes ?? null, i],
+        `INSERT INTO catalog_products (id, name, tagline, description, style_id, active, ships_with_mat, moulding_note, production_notes, sort, version, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
+        [p.id, p.name, p.tagline, p.description, p.styleId, p.active ? 1 : 0, p.shipsWithMat ? 1 : 0, p.mouldingNote ?? null, p.productionNotes ?? null, i, nowIso],
       )
       for (const [j, s] of p.sizes.entries()) {
         await run(
           tx,
-          `INSERT INTO catalog_sizes (product_id, id, width, height, unit, display_label, price_minor, glass_surcharge_minor, mat_surcharge_minor, sort)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [p.id, s.id, s.width, s.height, s.unit, s.displayLabel, s.priceMinor, s.glassSurchargeMinor, s.matSurchargeMinor, j],
+          `INSERT INTO catalog_sizes (product_id, id, width, height, unit, display_label, price_minor, glass_surcharge_minor, mat_surcharge_minor, active, sort, version, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
+          [p.id, s.id, s.width, s.height, s.unit, s.displayLabel, s.priceMinor, s.glassSurchargeMinor, s.matSurchargeMinor, s.active ? 1 : 0, j, nowIso],
         )
       }
       for (const [j, id] of p.glassOptionIds.entries()) await run(tx, 'INSERT INTO catalog_product_options (product_id, kind, option_id, sort) VALUES (?, ?, ?, ?)', [p.id, 'glass', id, j])
@@ -66,26 +73,31 @@ export async function saveCatalog(db: Db, catalog: Catalog): Promise<string> {
   return catalogVersion(catalog)
 }
 
-/** Loads the stored catalog, with its content-derived version. */
-export async function loadCatalog(db: Db): Promise<Catalog> {
-  const settings = new Map((await query(db, 'SELECT key, value FROM catalog_settings')).map((r) => [String(r.key), String(r.value)]))
-  const glassOptions: GlassOptionDef[] = (await query(db, 'SELECT * FROM catalog_glass_options ORDER BY sort')).map((r) => ({
+/**
+ * Loads the stored catalog, with its content-derived version. Takes any
+ * `Executor` (the database, or an open transaction) so admin writes can read
+ * a consistent snapshot to validate a proposed change against before
+ * committing it.
+ */
+export async function loadCatalog(ex: Executor): Promise<Catalog> {
+  const settings = new Map((await query(ex, 'SELECT key, value FROM catalog_settings')).map((r) => [String(r.key), String(r.value)]))
+  const glassOptions: GlassOptionDef[] = (await query(ex, 'SELECT * FROM catalog_glass_options ORDER BY sort')).map((r) => ({
     id: String(r.id),
     name: String(r.name),
     description: String(r.description),
     priced: Number(r.priced) === 1,
   }))
-  const matOptions: MatOptionDef[] = (await query(db, 'SELECT * FROM catalog_mat_options ORDER BY sort')).map((r) => ({
+  const matOptions: MatOptionDef[] = (await query(ex, 'SELECT * FROM catalog_mat_options ORDER BY sort')).map((r) => ({
     id: String(r.id),
     name: String(r.name),
     description: String(r.description),
     hasMat: Number(r.has_mat) === 1,
   }))
 
-  const sizeRows = await query(db, 'SELECT * FROM catalog_sizes ORDER BY product_id, sort')
-  const optionRows = await query(db, 'SELECT * FROM catalog_product_options ORDER BY product_id, kind, sort')
+  const sizeRows = await query(ex, 'SELECT * FROM catalog_sizes ORDER BY product_id, sort')
+  const optionRows = await query(ex, 'SELECT * FROM catalog_product_options ORDER BY product_id, kind, sort')
 
-  const products: ProductDef[] = (await query(db, 'SELECT * FROM catalog_products ORDER BY sort')).map((r) => {
+  const products: ProductDef[] = (await query(ex, 'SELECT * FROM catalog_products ORDER BY sort')).map((r) => {
     const id = String(r.id)
     const sizes: SizeDef[] = sizeRows
       .filter((s) => String(s.product_id) === id)
@@ -98,6 +110,7 @@ export async function loadCatalog(db: Db): Promise<Catalog> {
         priceMinor: Number(s.price_minor),
         glassSurchargeMinor: Number(s.glass_surcharge_minor),
         matSurchargeMinor: Number(s.mat_surcharge_minor),
+        active: Number(s.active) === 1,
       }))
     const optionIds = (kind: string) => optionRows.filter((o) => String(o.product_id) === id && String(o.kind) === kind).map((o) => String(o.option_id))
     return {

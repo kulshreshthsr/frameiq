@@ -33,6 +33,14 @@ export interface Config {
   rateLimit: { enabled: boolean; windowMs: number; max: number; uploadMax: number }
   /** Allowed browser origins for cross-origin calls. Same-origin needs none. */
   corsOrigins: string[]
+  /**
+   * Creates the first owner account automatically if the `users` table is
+   * empty when the server starts — meant for a container's first boot, where
+   * there is no terminal to run `npm run admin:create` from. Ignored once any
+   * account exists, so it can't be used to reset a password later; rotate the
+   * variable out of the environment after the account is created.
+   */
+  ownerBootstrap: { email: string; password: string; name: string } | null
 }
 
 export class ConfigError extends Error {
@@ -95,6 +103,15 @@ export function loadConfig(source: Source = process.env): Config {
   const whatsapp = (source.WHATSAPP_NUMBER ?? '').replace(/[^\d]/g, '')
   if (source.WHATSAPP_NUMBER && (whatsapp.length < 8 || whatsapp.length > 15)) problems.push('WHATSAPP_NUMBER must be an international number, digits only')
 
+  let ownerBootstrap: Config['ownerBootstrap'] = null
+  if (source.OWNER_BOOTSTRAP_EMAIL || source.OWNER_BOOTSTRAP_PASSWORD) {
+    const email = (source.OWNER_BOOTSTRAP_EMAIL ?? '').trim().toLowerCase()
+    const password = source.OWNER_BOOTSTRAP_PASSWORD ?? ''
+    if (!email || !email.includes('@')) problems.push('OWNER_BOOTSTRAP_EMAIL must be a valid email address')
+    if (password.length < 8) problems.push('OWNER_BOOTSTRAP_PASSWORD must be at least 8 characters')
+    ownerBootstrap = { email, password, name: source.OWNER_BOOTSTRAP_NAME ?? 'Owner' }
+  }
+
   if (problems.length > 0) throw new ConfigError(problems)
 
   return {
@@ -116,5 +133,6 @@ export function loadConfig(source: Source = process.env): Config {
       uploadMax: int(source.RATE_LIMIT_UPLOAD_MAX, 80),
     },
     corsOrigins: (source.CORS_ORIGINS ?? '').split(',').map((s) => s.trim()).filter(Boolean),
+    ownerBootstrap,
   }
 }

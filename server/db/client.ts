@@ -1,6 +1,8 @@
 import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { createClient, type Client, type InValue, type ResultSet, type Row, type Transaction } from '@libsql/client'
+
+export type { Transaction }
 import { MIGRATIONS } from './migrations.ts'
 
 /**

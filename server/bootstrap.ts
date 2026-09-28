@@ -1,5 +1,7 @@
 import { randomBytes } from 'node:crypto'
+import { OWNER_ROLE } from '../shared/admin.ts'
 import { SEED_CATALOG } from '../shared/catalogSeed.ts'
+import { countUsers, upsertUser } from './auth/users.ts'
 import { isCatalogEmpty, saveCatalog } from './catalog/catalogRepo.ts'
 import type { Config } from './config.ts'
 import type { AppContext } from './context.ts'
@@ -38,6 +40,9 @@ export async function buildContext(config: Config, overrides: Partial<AppContext
     (config.payment.provider === 'razorpay'
       ? new RazorpayProvider({ keyId: config.payment.keyId, keySecret: config.payment.keySecret, webhookSecret: config.payment.webhookSecret })
       : new SandboxProvider(config.payment.sandboxSecret, rid))
+  const now = overrides.now ?? (() => new Date())
+
+  await bootstrapOwnerAccount(config, db, log, rid, now)
 
   return {
     config,
@@ -47,7 +52,30 @@ export async function buildContext(config: Config, overrides: Partial<AppContext
     packageStorage: overrides.packageStorage ?? new DiskStorage(config.packagesDir),
     payments,
     notifier: overrides.notifier ?? new LogNotifier(log),
-    now: overrides.now ?? (() => new Date()),
+    now,
     randomId: rid,
   }
+}
+
+/**
+ * Creates the first OWNER account from `OWNER_BOOTSTRAP_EMAIL` /
+ * `OWNER_BOOTSTRAP_PASSWORD` when no account exists yet — the safe path for a
+ * fresh deployment with no terminal to run `npm run admin:create` from. Once
+ * any account exists this does nothing, on purpose: it is a one-time
+ * initialization mechanism, not a way to reset a password from the
+ * environment later.
+ */
+async function bootstrapOwnerAccount(config: Pick<AppContext, 'config'>['config'], db: AppContext['db'], log: AppContext['log'], randomId: AppContext['randomId'], now: AppContext['now']): Promise<void> {
+  if ((await countUsers(db)) > 0) return
+  if (!config.ownerBootstrap) {
+    if (config.env !== 'test') {
+      log.event('admin.no_owner_account', {
+        hint: 'Run `npm run admin:create -- --email you@example.com --password …` (or set OWNER_BOOTSTRAP_EMAIL / OWNER_BOOTSTRAP_PASSWORD before first start) to create the owner account.',
+      })
+    }
+    return
+  }
+  const { email, password, name } = config.ownerBootstrap
+  await upsertUser(db, { id: `usr_${randomId(12)}`, name, email, password, role: OWNER_ROLE, now: now() })
+  log.event('admin.owner_bootstrapped', { email })
 }

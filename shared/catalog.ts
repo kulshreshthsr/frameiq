@@ -42,6 +42,9 @@ export interface SizeDef {
   glassSurchargeMinor: Minor
   /** Added when a mat is requested on a product that doesn't ship with one. */
   matSurchargeMinor: Minor
+  /** Inactive sizes can't be chosen for a new order, but keep working for
+   * anything already looking them up (an in-progress design, an old order). */
+  active: boolean
 }
 
 export interface ProductDef {
@@ -143,6 +146,7 @@ export function validateCatalog(catalog: Catalog): string[] {
       wholeMoney(`${where} size "${size.id}" glass surcharge`, size.glassSurchargeMinor, true)
       wholeMoney(`${where} size "${size.id}" mat surcharge`, size.matSurchargeMinor, true)
     }
+    if (product.active && !product.sizes.some((s) => s.active)) problems.push(`${where} is active but has no active size`)
     for (const id of product.glassOptionIds) if (!findGlass(catalog, id)) problems.push(`${where} references unknown glass option "${id}"`)
     for (const id of product.matOptionIds) if (!findMat(catalog, id)) problems.push(`${where} references unknown mat option "${id}"`)
     if (product.glassOptionIds.length === 0) problems.push(`${where} offers no glass option`)
