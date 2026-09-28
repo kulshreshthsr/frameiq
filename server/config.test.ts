@@ -95,3 +95,29 @@ describe('validation of other settings', () => {
     expect(loadConfig({ CORS_ORIGINS: 'https://a.com, https://b.com' }).corsOrigins).toEqual(['https://a.com', 'https://b.com'])
   })
 })
+
+describe('owner bootstrap', () => {
+  it('is off by default — no free admin account from unset environment', () => {
+    expect(loadConfig({}).ownerBootstrap).toBeNull()
+  })
+
+  it('accepts a valid email and password, defaulting the name', () => {
+    const config = loadConfig({ OWNER_BOOTSTRAP_EMAIL: 'Owner@Shop.example', OWNER_BOOTSTRAP_PASSWORD: 'a-strong-password-1' })
+    expect(config.ownerBootstrap).toEqual({ email: 'owner@shop.example', password: 'a-strong-password-1', name: 'Owner' })
+  })
+
+  it('honours an explicit name', () => {
+    expect(loadConfig({ OWNER_BOOTSTRAP_EMAIL: 'a@b.com', OWNER_BOOTSTRAP_PASSWORD: 'a-strong-password-1', OWNER_BOOTSTRAP_NAME: 'Asha' }).ownerBootstrap?.name).toBe('Asha')
+  })
+
+  it('rejects a short password, and an invalid or missing email, without silently ignoring them', () => {
+    expect(problemsFor({ OWNER_BOOTSTRAP_EMAIL: 'a@b.com', OWNER_BOOTSTRAP_PASSWORD: 'short' }).join()).toMatch(/OWNER_BOOTSTRAP_PASSWORD/)
+    expect(problemsFor({ OWNER_BOOTSTRAP_PASSWORD: 'a-strong-password-1' }).join()).toMatch(/OWNER_BOOTSTRAP_EMAIL/)
+    expect(problemsFor({ OWNER_BOOTSTRAP_EMAIL: 'not-an-email', OWNER_BOOTSTRAP_PASSWORD: 'a-strong-password-1' }).join()).toMatch(/OWNER_BOOTSTRAP_EMAIL/)
+  })
+
+  it('is perfectly fine to set in production too (it only ever fires once, on an empty database)', () => {
+    const config = loadConfig({ ...production, OWNER_BOOTSTRAP_EMAIL: 'owner@shop.example', OWNER_BOOTSTRAP_PASSWORD: 'a-strong-password-1' })
+    expect(config.ownerBootstrap).toMatchObject({ email: 'owner@shop.example' })
+  })
+})
