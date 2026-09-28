@@ -8,20 +8,37 @@ import './index.css'
  * decided here, before either is imported — so a customer's browser never
  * downloads the admin bundle (or vice versa); Vite gives each dynamic
  * import its own chunk.
+ *
+ * The early `return` (no matching `else`) is deliberate: two structurally
+ * identical `if`/`else` branches that each do only `import(x).then(render)`
+ * are exactly the shape a minifier collapses into `import(cond ? a : b)` —
+ * which then preloads (and, for CSS, actually applies) BOTH branches'
+ * chunks on every load, defeating the whole point of the split. Keeping the
+ * branches syntactically different (an early return, not an else) has been
+ * verified to keep them separate through the production build; if you
+ * touch this function, rebuild and check the network tab on `/admin` for
+ * `App-*.css`/`App-*.js` — neither should load there.
  */
-const isAdmin = window.location.pathname === '/admin' || window.location.pathname.startsWith('/admin/')
+async function boot() {
+  const root = createRoot(document.getElementById('root')!)
+  const isAdmin = window.location.pathname === '/admin' || window.location.pathname.startsWith('/admin/')
 
-const root = createRoot(document.getElementById('root')!)
+  if (isAdmin) {
+    const { default: AdminApp } = await import('./admin/AdminApp.tsx')
+    root.render(
+      <StrictMode>
+        <AdminApp />
+      </StrictMode>,
+    )
+    return
+  }
 
-const render = (Component: React.ComponentType) =>
+  const { default: App } = await import('./App.tsx')
   root.render(
     <StrictMode>
-      <Component />
+      <App />
     </StrictMode>,
   )
-
-if (isAdmin) {
-  void import('./admin/AdminApp.tsx').then((m) => render(m.default))
-} else {
-  void import('./App.tsx').then((m) => render(m.default))
 }
+
+void boot()

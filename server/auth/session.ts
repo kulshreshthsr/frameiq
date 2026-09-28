@@ -29,7 +29,12 @@ const sha256 = (text: string) => createHash('sha256').update(text).digest('hex')
 
 function cookieOptions(ctx: Pick<AppContext, 'config'>, extra: { httpOnly: boolean }) {
   return {
-    path: '/api/admin',
+    // The session cookie only needs to reach the API, so it's scoped tightly.
+    // The CSRF cookie is READ BY PAGE JAVASCRIPT running under /admin — a
+    // cookie's Path controls which requests carry it, not who can read it
+    // (that's the origin, same as any cookie), so Path=/ here is the normal,
+    // correct shape for a double-submit token, not a widening of exposure.
+    path: extra.httpOnly ? '/api/admin' : '/',
     httpOnly: extra.httpOnly,
     secure: ctx.config.env === 'production',
     sameSite: 'Lax' as const,
@@ -104,7 +109,7 @@ export function setSessionCookies(c: Context, ctx: Pick<AppContext, 'config'>, s
 
 export function clearSessionCookies(c: Context, ctx: Pick<AppContext, 'config'>): void {
   deleteCookie(c, SESSION_COOKIE, { path: '/api/admin' })
-  deleteCookie(c, CSRF_COOKIE, { path: '/api/admin' })
+  deleteCookie(c, CSRF_COOKIE, { path: '/' })
   void ctx
 }
 
