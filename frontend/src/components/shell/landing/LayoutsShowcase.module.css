@@ -11,26 +11,68 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  padding: 20px 14px 22px;
+  border-radius: var(--radius);
+  background: var(--surface-dark-2);
   text-align: center;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.item:hover,
+.item:focus-within {
+  background: #24405f;
+  transform: translateY(-3px);
+}
+
+.index {
+  align-self: flex-start;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--gold-bright);
 }
 
 .item svg {
   width: 100%;
   height: auto;
   max-width: 108px;
+  margin: 2px 0 4px;
 }
 
 .name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--on-dark);
+}
+
+.desc {
   font-size: 12.5px;
-  font-weight: 600;
-  color: var(--ink-2);
+  line-height: 1.45;
+  color: var(--on-dark-2);
+  min-height: 34px;
+}
+
+.use {
+  margin-top: 4px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--gold-bright);
+  text-decoration: none;
+}
+
+.item:hover .use,
+.item:focus-within .use,
+.use:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 @media (max-width: 900px) {
   .grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 24px 16px;
+    gap: 16px;
   }
 }
 

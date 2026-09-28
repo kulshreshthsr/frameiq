@@ -33,13 +33,13 @@ const FrameStylesShowcase = lazy(() => loadFrameStyles().then((m) => ({ default:
  * (`WhySection`, `Faq`) — rather than stock photography or invented social
  * proof, neither of which this product has.
  */
-export function Landing() {
+export function Landing({ onScroll }: { onScroll?: (scrollTop: number) => void }) {
   useEffect(() => {
     void loadFrameStyles()
   }, [])
 
   return (
-    <div className={styles.landing}>
+    <div id="top" className={styles.landing} onScroll={onScroll ? (e) => onScroll(e.currentTarget.scrollTop) : undefined}>
       <Hero />
       <StartSection />
       <HowItWorks />

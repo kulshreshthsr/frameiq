@@ -16,19 +16,22 @@ import styles from './HeroIllustration.module.css'
  */
 
 const FRAMES = [
-  { x: 118, y: 96, w: 92, h: 118, tint: 'sunset' as const },
+  { x: 118, y: 96, w: 92, h: 118, tint: 'gold' as const },
   { x: 232, y: 128, w: 108, h: 82, tint: 'sage' as const },
-  { x: 62, y: 232, w: 70, h: 90, tint: 'sky' as const, small: true },
+  { x: 62, y: 232, w: 70, h: 90, tint: 'slate' as const, small: true },
 ]
 
-function Frame({ x, y, w, h, tint }: { x: number; y: number; w: number; h: number; tint: 'sunset' | 'sage' | 'sky' }) {
+function Frame({ x, y, w, h, tint }: { x: number; y: number; w: number; h: number; tint: 'gold' | 'sage' | 'slate' }) {
   const outer = 6
   const mat = 8
   return (
-    <g transform={`translate(${x} ${y})`}>
-      <rect x={-3} y={2} width={w + 6} height={h + 6} rx={2} fill="rgba(33,28,23,0.16)" />
-      <rect width={w} height={h} rx={1} fill="#5b4632" />
-      <rect x={outer} y={outer} width={w - outer * 2} height={h - outer * 2} fill="#fbf9f4" />
+    <g transform={`translate(${x} ${y})`} filter="url(#hero-frame-shadow)">
+      <rect width={w} height={h} rx={1} fill="#4a3a2a" />
+      {/* a thin lighter bevel along the top/left edge of the moulding, where
+          the room's light would catch it — keeps the frame from reading as
+          a flat rectangle */}
+      <path d={`M0 0 L${w} 0 L${w - outer} ${outer} L${outer} ${outer} L${outer} ${h - outer} L0 ${h} Z`} fill="#6b5540" opacity={0.55} />
+      <rect x={outer} y={outer} width={w - outer * 2} height={h - outer * 2} fill="#fffdf9" />
       <rect x={outer + mat} y={outer + mat} width={w - (outer + mat) * 2} height={h - (outer + mat) * 2} fill={`url(#hero-${tint})`} />
       <rect x={outer + mat} y={outer + mat} width={w - (outer + mat) * 2} height={(h - (outer + mat) * 2) * 0.4} fill="white" opacity={0.14} />
     </g>
@@ -70,12 +73,22 @@ export function HeroIllustration() {
   const room = (
     <>
       <rect width="420" height="340" fill="url(#hero-wall)" />
-      <rect y="292" width="420" height="48" fill="#d8ccb2" />
+      {/* faint vertical wall panelling, so the wall reads as a real surface
+          rather than a flat fill even before any frames are added */}
+      <g opacity={0.4} stroke="#cabf9f" strokeWidth={1}>
+        {Array.from({ length: 6 }, (_, i) => (76 + i * 56)).map((wx) => (
+          <line key={wx} x1={wx} y1="0" x2={wx} y2="292" />
+        ))}
+      </g>
+      <rect y="292" width="420" height="48" fill="url(#hero-floor)" />
+      <line x1="0" y1="292" x2="420" y2="292" stroke="#00000018" strokeWidth={2} />
       {/* a console table, for scale and warmth */}
-      <rect x="150" y="250" width="130" height="10" rx="2" fill="#7a6248" />
-      <rect x="160" y="260" width="14" height="32" fill="#5b4632" />
-      <rect x="256" y="260" width="14" height="32" fill="#5b4632" />
-      <ellipse cx="205" cy="248" rx="16" ry="22" fill="#5c7350" />
+      <rect x="148" y="248" width="134" height="11" rx="2" fill="#7a6248" />
+      <rect x="148" y="248" width="134" height="4" rx="2" fill="#8f7256" />
+      <rect x="160" y="259" width="14" height="32" fill="#4a3a2a" />
+      <rect x="256" y="259" width="14" height="32" fill="#4a3a2a" />
+      <ellipse cx="205" cy="246" rx="16" ry="22" fill="#5c7350" />
+      <ellipse cx="205" cy="246" rx="16" ry="22" fill="#00000012" />
       <rect x="199" y="266" width="12" height="18" fill="#8a6a48" />
     </>
   )
@@ -103,21 +116,28 @@ export function HeroIllustration() {
       <svg width="0" height="0" aria-hidden focusable="false">
         <defs>
           <linearGradient id="hero-wall" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#e8e0d0" />
+            <stop offset="0" stopColor="#ece5d4" />
             <stop offset="1" stopColor="#ddd2bc" />
           </linearGradient>
-          <linearGradient id="hero-sunset" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#e6a15c" />
-            <stop offset="1" stopColor="#9a4a2a" />
+          <linearGradient id="hero-floor" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#dccfae" />
+            <stop offset="1" stopColor="#c9b98f" />
+          </linearGradient>
+          <linearGradient id="hero-gold" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#e0b45c" />
+            <stop offset="1" stopColor="#8a6d2a" />
           </linearGradient>
           <linearGradient id="hero-sage" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stopColor="#8a9b7a" />
             <stop offset="1" stopColor="#4f6146" />
           </linearGradient>
-          <linearGradient id="hero-sky" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#c9d6d8" />
-            <stop offset="1" stopColor="#7d97a0" />
+          <linearGradient id="hero-slate" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#7d97a0" />
+            <stop offset="1" stopColor="#3d5066" />
           </linearGradient>
+          <filter id="hero-frame-shadow" x="-40%" y="-30%" width="180%" height="180%">
+            <feDropShadow dx="0" dy="6" stdDeviation="7" floodColor="#15243a" floodOpacity="0.32" />
+          </filter>
         </defs>
       </svg>
       <div className={styles.track} ref={trackRef}>

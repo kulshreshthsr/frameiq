@@ -29,6 +29,26 @@
   border-bottom: 1px solid var(--line);
 }
 
+/* The "immersive" dark surfaces the brief calls for, alternated against the
+ * light sections for rhythm. Any section can take this modifier; it swaps
+ * the whole local color scheme, not just the background. */
+.dark {
+  background: var(--surface-dark);
+  color: var(--on-dark-2);
+}
+
+.dark .sectionTitle {
+  color: var(--on-dark);
+}
+
+.dark .sectionEyebrow {
+  color: var(--gold-bright);
+}
+
+.dark .sectionLead {
+  color: var(--on-dark-2);
+}
+
 .inner {
   width: 100%;
   max-width: 1080px;

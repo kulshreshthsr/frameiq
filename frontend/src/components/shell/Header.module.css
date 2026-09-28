@@ -2,20 +2,50 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 60px;
-  padding: 0 24px;
+  gap: 16px;
+  min-height: 68px;
+  padding: 0 28px;
   border-bottom: 1px solid var(--line);
   background: var(--paper);
   flex: none;
+  transition: min-height 0.2s ease, padding 0.2s ease;
+}
+
+.header.compact {
+  min-height: 56px;
+  padding: 0 24px;
+  box-shadow: var(--shadow-soft);
 }
 
 .brand {
-  font-family: var(--font-serif);
-  font-size: 21px;
-  font-weight: 500;
-  letter-spacing: -0.01em;
+  display: inline-flex;
   color: var(--ink);
   white-space: nowrap;
+  text-decoration: none;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex: 1;
+  justify-content: center;
+}
+
+.navLink {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-2);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.navLink:hover {
+  color: var(--ink);
+}
+
+.cta {
+  flex: none;
 }
 
 .progress {
@@ -25,6 +55,7 @@
 .actions {
   display: flex;
   justify-content: flex-end;
+  flex: none;
 }
 
 .startOverIcon {
@@ -51,15 +82,17 @@
   }
 }
 
+@media (max-width: 899px) {
+  .nav {
+    display: none;
+  }
+}
+
 /* Phones: brand steps aside so the six-step progress fits a 390px row. */
 @media (max-width: 999px) {
   .header {
-    min-height: 52px;
+    min-height: 56px;
     padding: 0 8px 0 16px;
-  }
-
-  .brand {
-    font-size: 19px;
   }
 
   .withDesign .brand {
@@ -80,5 +113,12 @@
 
   .startOverIcon {
     display: inline-flex;
+  }
+}
+
+@media (max-width: 560px) {
+  .cta {
+    padding: 0 14px;
+    font-size: 13px;
   }
 }

@@ -63,6 +63,7 @@ function App() {
   const [isPreparingOrder, setIsPreparingOrder] = useState(false)
   const [confirmingStartOver, setConfirmingStartOver] = useState(false)
   const [canvasOk] = useState(supportsCanvas)
+  const [landingScrolled, setLandingScrolled] = useState(false)
 
   // Restore the saved design, pick up any checkout in progress, then start
   // saving. Restoring first means an empty startup state can never overwrite
@@ -185,7 +186,7 @@ function App() {
 
   return (
     <div className={`app ${isFullscreenPreview ? 'appFullscreen' : ''}`}>
-      {!isFullscreenPreview && <Header hasDesign={Boolean(wall)} onStartOver={() => setConfirmingStartOver(true)} />}
+      {!isFullscreenPreview && <Header hasDesign={Boolean(wall)} onStartOver={() => setConfirmingStartOver(true)} compact={!wall && landingScrolled} />}
 
       {wall ? (
         <Suspense
@@ -198,7 +199,7 @@ function App() {
           <Workspace ref={canvasStageRef} onExport={() => void handleExport()} isExporting={isExporting} onOrder={() => void handleOrder()} isPreparingOrder={isPreparingOrder} />
         </Suspense>
       ) : (
-        <Landing />
+        <Landing onScroll={(top) => setLandingScrolled(top > 8)} />
       )}
 
       <Toasts />

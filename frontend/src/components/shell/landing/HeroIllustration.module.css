@@ -46,6 +46,7 @@
 
 .tag {
   right: 14px;
+  background: rgba(21, 36, 58, 0.86);
 }
 
 .tagBefore {
@@ -53,7 +54,7 @@
   position: absolute;
   top: 14px;
   bottom: auto;
-  background: rgba(251, 249, 244, 0.9);
+  background: rgba(255, 253, 249, 0.92);
   color: var(--ink);
 }
 
@@ -77,25 +78,30 @@
   bottom: 0;
   left: 50%;
   width: 2px;
-  background: var(--paper);
-  box-shadow: 0 0 0 1px rgba(33, 28, 23, 0.25);
+  background: var(--gold-bright);
+  box-shadow: 0 0 0 1px rgba(21, 36, 58, 0.3);
   transform: translateX(-50%);
 }
 
 .handle svg {
   position: relative;
-  width: 32px;
-  height: 32px;
-  padding: 8px;
+  width: 34px;
+  height: 34px;
+  padding: 9px;
   border-radius: 50%;
-  background: var(--paper);
-  color: var(--ink);
-  box-shadow: var(--shadow-soft);
+  background: var(--surface-dark);
+  color: var(--on-dark);
+  box-shadow: 0 0 0 2px var(--gold-bright), var(--shadow-lift);
+  transition: transform 0.15s ease;
+}
+
+.handle:hover svg {
+  transform: scale(1.06);
 }
 
 .handle:focus-visible svg {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  outline: 2px solid var(--gold-bright);
+  outline-offset: 3px;
 }
 
 .caption {

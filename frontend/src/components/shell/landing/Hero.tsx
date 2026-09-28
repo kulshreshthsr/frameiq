@@ -11,23 +11,28 @@ import styles from './Hero.module.css'
 export function Hero() {
   return (
     <div className={styles.hero}>
+      <div className={styles.grid} aria-hidden />
       <div className={styles.inner}>
         <div className={styles.copy}>
           <p className="eyebrow">Custom wall frames</p>
           <h1 className={styles.headline}>Design your wall before you buy it.</h1>
           <p className={styles.lede}>
-            Upload a photo of your own wall, arrange your photos and frames on it, and see exactly how it will look — real sizes, real
-            prices, before anything is made.
+            Upload your wall, arrange your photos and frames, and see the finished design at real sizes and real prices — before
+            anything is made.
           </p>
           <div className={styles.actions}>
             <a href="#start" className="btn btnPrimary">
               Design your wall
             </a>
-            <a href="#how-it-works" className="btn btnSecondary">
-              See how it works
+            <a href="#templates" className="btn btnSecondary">
+              Browse gallery walls
             </a>
           </div>
-          <p className={styles.trust}>Free to design. Your photos stay on your device until you choose to order.</p>
+          <ul className={styles.trust}>
+            <li>Free to design</li>
+            <li>No account required</li>
+            <li>See your price instantly</li>
+          </ul>
         </div>
         <div className={styles.visual}>
           <HeroIllustration />
