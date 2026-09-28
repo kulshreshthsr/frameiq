@@ -39,7 +39,7 @@ npm run test:e2e     # browser tests (Playwright) — builds the site and starts
 
 First time only: `npx playwright install chromium`.
 
-The Playwright suite runs the production build against the real server (fresh database, sandbox payments, `data/e2e/`) and covers the whole journey: design → review → details → delivery → payment → confirmation, plus decline/cancel/retry, refresh at every stage, double-clicking Pay, paying while the tab is closed, order links on another device, a price change mid-checkout, low-resolution photos, and phone layouts at 390×844, 375×812 and 430×932. `e2e/admin.spec.ts` separately covers signing in, creating and pricing a product, a bulk price change, and — the important one — that raising a price never touches an order already placed while a new one uses the new price.
+The Playwright suite runs the production build against the real server (fresh database, sandbox payments, `backend/data/e2e/`) and covers the whole journey: design → review → details → delivery → payment → confirmation, plus decline/cancel/retry, refresh at every stage, double-clicking Pay, paying while the tab is closed, order links on another device, a price change mid-checkout, low-resolution photos, and phone layouts at 390×844, 375×812 and 430×932. `e2e/admin.spec.ts` separately covers signing in, creating and pricing a product, a bulk price change, and — the important one — that raising a price never touches an order already placed while a new one uses the new price.
 
 Screenshot baselines live in `e2e/__screenshots__`. After an *intentional* visual change, review the diff and run `npm run test:e2e:update`.
 
@@ -61,7 +61,7 @@ The browser generates a random access token per order; the server stores only it
 
 ## The production package
 
-For every paid order the server writes `data/packages/<order id>/` (regenerate any time with `npm run order:package -- FRM-2026-000123`):
+For every paid order the server writes `backend/data/packages/<order id>/` (default location — see `PACKAGES_DIR`; regenerate any time with `npm run order:package -- FRM-2026-000123`):
 
 | File | What it is |
 |---|---|
@@ -108,7 +108,7 @@ Settings come from environment variables (or a local `.env`; real variables win)
 | `WHATSAPP_NUMBER` | Optional; shows a "message us" button on the confirmation |
 | `OWNER_BOOTSTRAP_EMAIL`, `OWNER_BOOTSTRAP_PASSWORD`, `OWNER_BOOTSTRAP_NAME` | Optional; creates the first owner account on an empty database. See "Owner admin" |
 
-The server refuses to start in production with the sandbox provider, without Razorpay credentials, without a database URL, or without an https base URL — and it never auto-seeds a production database. **No secrets are committed**; `.env` and `data/` are git-ignored.
+The server refuses to start in production with the sandbox provider, without Razorpay credentials, without a database URL, or without an https base URL — and it never auto-seeds a production database. **No secrets are committed**; `.env` and `backend/data/` are git-ignored.
 
 ## Going live
 
