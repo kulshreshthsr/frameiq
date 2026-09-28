@@ -70,20 +70,58 @@ export async function createTestServer(configOverrides: Record<string, string> =
 export interface Api {
   get(path: string, headers?: Record<string, string>): Promise<Response>
   post(path: string, body?: unknown, headers?: Record<string, string>): Promise<Response>
+  patch(path: string, body?: unknown, headers?: Record<string, string>): Promise<Response>
 }
 
 export function apiFor(server: TestServer): Api {
+  const withBody = (method: string) => (path: string, body: unknown, headers?: Record<string, string>) =>
+    Promise.resolve(
+      server.app.request(path, {
+        method,
+        headers: { 'Content-Type': 'application/json', ...headers },
+        body: body === undefined ? undefined : JSON.stringify(body),
+      }),
+    )
   return {
     get: (path, headers) => Promise.resolve(server.app.request(path, { headers })),
-    post: (path, body, headers) =>
-      Promise.resolve(
-        server.app.request(path, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', ...headers },
-          body: body === undefined ? undefined : JSON.stringify(body),
-        }),
-      ),
+    post: withBody('POST'),
+    patch: withBody('PATCH'),
   }
+}
+
+// ---------------------------------------------------------------- owner admin
+
+/** The cookies + CSRF token a logged-in owner's browser would carry, and the
+ * headers that reproduce them on the next request. */
+export interface OwnerSession {
+  headers(): Record<string, string>
+}
+
+function sessionFromSetCookie(response: Response): OwnerSession {
+  const jar = new Map<string, string>()
+  for (const line of response.headers.getSetCookie()) {
+    const [pair] = line.split(';')
+    const eq = pair.indexOf('=')
+    jar.set(pair.slice(0, eq).trim(), pair.slice(eq + 1))
+  }
+  const csrf = jar.get('admin_csrf') ?? ''
+  return {
+    headers: () => ({ Cookie: [...jar.entries()].map(([k, v]) => `${k}=${v}`).join('; '), 'x-admin-csrf': csrf }),
+  }
+}
+
+/** Creates an owner account directly (there is no public sign-up endpoint). */
+export async function createOwner(server: TestServer, input: { email: string; password: string; name?: string; role?: string } = { email: 'owner@test.example', password: 'correct horse battery' }): Promise<void> {
+  const { upsertUser } = await import('../auth/users.ts')
+  await upsertUser(server.ctx.db, { id: `usr_${++idCounter}`, name: input.name ?? 'Owner', email: input.email, password: input.password, role: input.role ?? 'owner', now: server.clock.now })
+}
+let idCounter = 0
+
+/** Logs an existing account in through the real HTTP endpoint and returns the
+ * session a subsequent authenticated request needs. */
+export async function loginOwner(server: TestServer, email: string, password: string): Promise<{ response: Response; session: OwnerSession }> {
+  const response = await apiFor(server).post('/api/admin/auth/login', { email, password })
+  return { response, session: sessionFromSetCookie(response) }
 }
 
 // ---------------------------------------------------------------- order building
