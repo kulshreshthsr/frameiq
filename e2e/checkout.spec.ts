@@ -76,7 +76,7 @@ test.describe('ordering', () => {
 
     // 7 · The designer has let go of the finished design.
     await page.getByTestId('another-design').click()
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('framed on your own wall')
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Design your wall before you buy it')
     expect(errors()).toEqual([])
   })
 
@@ -254,7 +254,7 @@ test.describe('recovery — "did I just pay or not?"', () => {
     const stranger = await other.newPage()
     await stranger.goto(`/order/${orderId}?t=${'x'.repeat(43)}`)
     await expect(stranger.getByRole('alert').filter({ hasText: 'couldn’t find that order' })).toBeVisible()
-    await expect(stranger.getByRole('heading', { level: 1 })).toContainText('framed on your own wall')
+    await expect(stranger.getByRole('heading', { level: 1 })).toContainText('Design your wall before you buy it')
     await other.close()
   })
 

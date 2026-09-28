@@ -17,7 +17,7 @@ test.describe('customer journey', () => {
     await openApp(page)
 
     // 1 · Open: the promise and the first step are on screen; no developer tooling.
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('framed on your own wall')
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Design your wall before you buy it')
     await expect(page.getByRole('button', { name: /developer tools/i })).toHaveCount(0)
     await expect(page.getByText('Realism Lab')).toHaveCount(0)
 
