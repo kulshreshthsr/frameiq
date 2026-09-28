@@ -12,11 +12,12 @@ Guest checkout only: there are no accounts.
 npm install
 cp .env.example .env          # local settings; never commit .env
 npm run db:seed -- --apply    # first time: load the catalog into the local database
+npm run admin:create -- --email you@example.com --password "…"   # first time: create your owner login
 npm run dev:api               # the backend  (http://127.0.0.1:8787)
 npm run dev                   # the website  (proxies /api to the backend)
 ```
 
-Open the address `npm run dev` prints. In development the payment window is a labelled **test payment** dialog with "succeed / fail / cancel" buttons.
+Open the address `npm run dev` prints. In development the payment window is a labelled **test payment** dialog with "succeed / fail / cancel" buttons. Owner admin is at `/admin`.
 
 Production-style, one process serving both the site and the API:
 
@@ -36,7 +37,7 @@ npm run test:e2e     # browser tests (Playwright) — builds the site and starts
 
 First time only: `npx playwright install chromium`.
 
-The Playwright suite runs the production build against the real server (fresh database, sandbox payments, `data/e2e/`) and covers the whole journey: design → review → details → delivery → payment → confirmation, plus decline/cancel/retry, refresh at every stage, double-clicking Pay, paying while the tab is closed, order links on another device, a price change mid-checkout, low-resolution photos, and phone layouts at 390×844, 375×812 and 430×932.
+The Playwright suite runs the production build against the real server (fresh database, sandbox payments, `data/e2e/`) and covers the whole journey: design → review → details → delivery → payment → confirmation, plus decline/cancel/retry, refresh at every stage, double-clicking Pay, paying while the tab is closed, order links on another device, a price change mid-checkout, low-resolution photos, and phone layouts at 390×844, 375×812 and 430×932. `e2e/admin.spec.ts` separately covers signing in, creating and pricing a product, a bulk price change, and — the important one — that raising a price never touches an order already placed while a new one uses the new price.
 
 Screenshot baselines live in `e2e/__screenshots__`. After an *intentional* visual change, review the diff and run `npm run test:e2e:update`.
 
@@ -70,12 +71,25 @@ For every paid order the server writes `data/packages/<order id>/` (regenerate a
 
 ## The catalog (prices, sizes, options)
 
-Everything sellable — products, sizes, glass and mat options, prices, delivery fee — is data, not UI code.
+Everything sellable — products, sizes, glass and mat options, prices, delivery fee — is data, not UI code, and the **database is the runtime source of truth**.
 
-- Placeholder data lives in `shared/catalogSeed.ts` (clearly marked **PLACEHOLDER**; replace before launch).
-- Edit it and run `npm run db:seed -- --apply` to update the database. Each catalog gets a content-hash `version`; every order records the version it was priced against.
+- `shared/catalogSeed.ts` is **development/bootstrap data only** (clearly marked **PLACEHOLDER**) — what `npm run db:seed` loads into an empty database. It is not consulted once the shop is running.
+- Changing what's actually sold and what it costs is the owner admin's job (below), not a seed-file edit or a redeploy.
 - The browser fetches the catalog from `GET /api/catalog` and falls back to the built-in copy for design, but ordering requires the server's.
-- **Existing orders never change when prices change** — an order carries its own price snapshot.
+- Each catalog gets a content-hash `version`; every order records the version it was priced against. **Existing orders never change when prices change** — an order carries its own immutable price snapshot, copied into `order_items` at the moment of purchase.
+
+## Owner admin
+
+At `/admin` — a small, separate area (its own code-split bundle; nothing from it reaches the customer download, and nothing from the customer app reaches it) where the owner manages the catalog without touching code, seed files, or the database directly.
+
+- **Sign in**: `npm run admin:create -- --email you@example.com --password "…"` creates the account (or resets that email's password — there is no public sign-up). For a fresh deployment with no terminal access, set `OWNER_BOOTSTRAP_EMAIL` / `OWNER_BOOTSTRAP_PASSWORD` before the very first start instead; the server creates that one account when the `users` table is empty and ignores those variables forever after (rotate them out of the environment once done). Sessions are an httpOnly cookie, 12 hours, with CSRF protection on every mutation and a tight rate limit on login attempts.
+- **Dashboard** (`/admin`): active/inactive product and size counts, recent price changes, recent orders.
+- **Catalog** (`/admin/catalog`): search, filter, sort; activate/deactivate a product or a size inline. A product can't be created already active — it starts with no sizes, so the owner adds one, then switches it on. Deactivating is the only way to retire something; there is no delete, so a size or product referenced by a past order is never at risk.
+- **A product's page** (`/admin/products/:id`): edit its details and offered glass/mat options; a sizes table with the price editable inline; **price history** per size, with a one-click **revert** (which writes a new, forward audit entry restoring the old value — it never edits or deletes what actually happened).
+- **Bulk pricing** (`/admin/catalog/bulk`): tick several sizes, apply a percent or a fixed-₹ adjustment, **preview it**, review the full list of changes, then apply — one all-or-nothing request.
+- **Orders** (`/admin/orders`): a read-only list and detail view with the full delivery address, for fulfilment — no status changes or refunds yet (see Known limits).
+
+Every product/size write is validated against the *whole* resulting catalog (the same check the seed data must pass), so a bad edit is refused rather than reaching customers; and versioned per row, so a save built on a stale page is refused with a clear "reload and try again" (409) instead of silently overwriting someone else's edit made a moment earlier. Every change — single or bulk — is written to an append-only audit log with who, what, old value, new value and when.
 
 ## Configuration
 
@@ -90,6 +104,7 @@ Settings come from environment variables (or a local `.env`; real variables win)
 | `PAYMENT_PROVIDER` | `sandbox` (refused in production) or `razorpay` |
 | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` | Required for `razorpay`. Never commit these |
 | `WHATSAPP_NUMBER` | Optional; shows a "message us" button on the confirmation |
+| `OWNER_BOOTSTRAP_EMAIL`, `OWNER_BOOTSTRAP_PASSWORD`, `OWNER_BOOTSTRAP_NAME` | Optional; creates the first owner account on an empty database. See "Owner admin" |
 
 The server refuses to start in production with the sandbox provider, without Razorpay credentials, without a database URL, or without an https base URL — and it never auto-seeds a production database. **No secrets are committed**; `.env` and `data/` are git-ignored.
 
@@ -107,14 +122,18 @@ Read this before charging real money.
 
 | Area | What lives there |
 |---|---|
-| `shared/` | Code used by browser **and** server so they can't disagree: money, catalog types and validation, **pricing**, the design-snapshot schema, customer/delivery rules, production-image checks |
+| `shared/` | Code used by browser **and** server so they can't disagree: money, catalog types and validation, **pricing**, the design-snapshot schema, customer/delivery rules, production-image checks, the admin domain types and request validation |
 | `server/` | The Hono API: orders, uploads, payments (provider abstraction + sandbox + Razorpay), catalog, production package, notification outbox, migrations, structured logging |
-| `scripts/` | `db-seed`, `order-package`, and the Playwright test server |
+| `server/auth/` | Password hashing, cookie sessions + CSRF, the OWNER-only auth middleware |
+| `server/catalog/adminCatalogRepo.ts` | The only write path for products/sizes: validated, versioned (optimistic concurrency), audited |
+| `server/admin/` | The `/api/admin/*` routes and the dashboard query |
+| `scripts/` | `db-seed`, `admin:create`, `order-package`, and the Playwright test server |
 | `src/domain/` | Frontend product model — a registry over the catalog, physical sizing/placement, print quality |
 | `src/state/`, `src/persistence/` | Zustand stores; draft saving (localStorage + IndexedDB) |
 | `src/order/` | Snapshot builder, crop maths, original-image store, API client |
 | `src/checkout/` | The ordering flow: state, persistence, forms, payment, confirmation |
-| `src/components/` | UI. `CanvasStage/` is the Konva renderer; `Journey/` the design steps; `dev/` developer tools |
+| `src/admin/` | The owner admin app — its own router, API client and pages. Imports nothing from `src/checkout` or `src/order`, and nothing outside `src/admin` imports from it; `src/main.tsx` loads one or the other by URL |
+| `src/components/` | Customer-facing UI. `CanvasStage/` is the Konva renderer; `Journey/` the design steps; `dev/` developer tools |
 
 ### Ideas worth knowing before you change things
 
@@ -124,13 +143,16 @@ Read this before charging real money.
 - **Every checkout step is repeatable.** Uploads are content-addressed, order creation is idempotent, opening a payment reuses an open one — so any failure can offer a plain "try again".
 - **Placement = anchor + size + scale.** A layout slot says where; the catalog says how big; the customer's wall width sets the scale. See `domain/placement.ts`.
 - **Developer tools** (Frame Style Lab, Realism Lab) exist only in `npm run dev`.
+- **A product/size write is validated as a whole catalog, not a field.** `adminCatalogRepo.ts` re-runs `validateCatalog` on the resulting catalog inside the same transaction as the write, so it inherits every invariant (unique ids, positive prices, at least one active size) for free — a new rule added there protects admin edits automatically, no separate admin-side validation to keep in sync.
+- **`src/main.tsx`'s two branches must stay structurally different** (an early `return`, not an `if`/`else` with the same shape in both arms) — see the comment there. It's the only thing stopping the production minifier from merging the customer and admin dynamic imports, which would load both bundles' CSS on every page. Verify with a network trace on `/admin` after touching it.
 
 ## Known limits
 
 - Real payments are unverified against Razorpay (see Going live). The sandbox dialog code ships in the site bundle but is inert unless the server runs the sandbox provider.
 - Single-server design: per-order locking and the rate limiter are in-process; SQLite lives on local disk; uploads and packages are local files (the storage layer has an interface ready for object storage).
 - Notifications are an outbox that is only **logged** (WhatsApp/email delivery is not wired up); the confirmation page and production package are the source of truth.
-- No admin screen: the business reads packages from disk / `npm run order:package`. Paid-after-cancel and duplicate-charge cases are flagged in the database for a person to resolve; refunds are not automated.
+- Admin orders are read-only: no fulfilment/shipping status, no refund action. Paid-after-cancel and duplicate-charge cases are flagged in the database for a person to resolve; the business still reads full production packages from disk / `npm run order:package`.
+- One role (owner) today; the auth model supports a second later but there is no UI to invite or manage staff accounts, and no audit log for admin logins beyond the structured server log.
 - Orphaned uploads (photos uploaded but never ordered) are not yet cleaned up.
 - The order link contains its access token; anyone with the link can view that order.
 - Sizes shown on the wall are approximate (they rely on the customer's wall-width estimate); the frames are made to the listed sizes. Strong perspective can show faint beading along frame edges.
