@@ -7,7 +7,7 @@ import { Actions } from './Actions'
 import { useCheckoutStore } from './checkoutStore'
 import { nextStage, replaceOriginal } from './flow'
 import { ACCEPTED_IMAGE_TYPES } from '../lib/constants'
-import styles from './checkout.module.css'
+import * as cs from './checkoutStyles'
 
 function ProblemCard({ problem, onEditDesign }: { problem: ImageProblem; onEditDesign: () => void }) {
   const input = useRef<HTMLInputElement | null>(null)
@@ -40,11 +40,22 @@ function ProblemCard({ problem, onEditDesign }: { problem: ImageProblem; onEditD
   }[problem.code]
 
   return (
-    <div className={styles.problem} role="alert">
-      <p className={styles.problemTitle}>{copy.title}</p>
-      <p className={styles.problemBody}>{copy.body}</p>
-      <input ref={input} type="file" accept={ACCEPTED_IMAGE_TYPES.join(',')} hidden aria-label={`Choose a photo for frame ${problem.frameNumber}`} data-testid={`replace-${problem.frameNumber}`} onChange={(e) => { void pick(e.target.files?.[0]); e.target.value = '' }} />
-      <div className={styles.problemActions}>
+    <div className={cs.problem} role="alert">
+      <p className={cs.problemTitle}>{copy.title}</p>
+      <p className={cs.problemBody}>{copy.body}</p>
+      <input
+        ref={input}
+        type="file"
+        accept={ACCEPTED_IMAGE_TYPES.join(',')}
+        hidden
+        aria-label={`Choose a photo for frame ${problem.frameNumber}`}
+        data-testid={`replace-${problem.frameNumber}`}
+        onChange={(e) => {
+          void pick(e.target.files?.[0])
+          e.target.value = ''
+        }}
+      />
+      <div className={cs.problemActions}>
         <button type="button" className="btn btnSecondary btnCompact" onClick={() => input.current?.click()} disabled={busy}>
           {busy ? 'Checking…' : copy.action}
         </button>
@@ -54,7 +65,7 @@ function ProblemCard({ problem, onEditDesign }: { problem: ImageProblem; onEditD
           </button>
         )}
       </div>
-      {error && <p className={styles.errorText}>{error}</p>}
+      {error && <p className={cs.errorText}>{error}</p>}
     </div>
   )
 }
@@ -73,29 +84,29 @@ export function ReviewStage({ onEditDesign }: ReviewStageProps) {
   const empty = snapshot.frames.filter((f) => !f.photo).length
 
   return (
-    <div className={styles.stage}>
-      <h1 className={styles.stageTitle}>Review your design</h1>
-      <p className={styles.stageLead}>This is exactly what we’ll make. Take a last look — you can still go back and change anything.</p>
+    <div className={cs.stage}>
+      <h1 className={cs.stageTitle}>Review your design</h1>
+      <p className={cs.stageLead}>This is exactly what we’ll make. Take a last look — you can still go back and change anything.</p>
 
       {previewUrl && (
-        <figure className={styles.previewFigure}>
-          <img className={styles.previewImage} src={previewUrl} alt="Your framed wall" style={{ aspectRatio: `${snapshot.wall.asset.width} / ${snapshot.wall.asset.height}` }} />
+        <figure className="m-0">
+          <img className={cs.previewImage} src={previewUrl} alt="Your framed wall" style={{ aspectRatio: `${snapshot.wall.asset.width} / ${snapshot.wall.asset.height}` }} />
         </figure>
       )}
 
       <section aria-labelledby="frames-heading">
-        <h2 id="frames-heading" className={styles.sectionHeading}>
+        <h2 id="frames-heading" className={cs.sectionHeading}>
           {snapshot.frames.length} frame{snapshot.frames.length === 1 ? '' : 's'}
         </h2>
-        <ul className={styles.frameList}>
+        <ul className={cs.frameList}>
           {snapshot.frames.map((frame) => {
             const sku = findSku(frame.productId, frame.sizeId)
             return (
-              <li key={frame.id} className={styles.frameRow}>
-                <span className={styles.frameNumber}>{frame.number}</span>
-                <span className={styles.frameWhat}>
+              <li key={frame.id} className={cs.frameRow}>
+                <span className={cs.frameNumber}>{frame.number}</span>
+                <span className={cs.frameWhat}>
                   <strong>{getProduct(frame.productId).name}</strong>
-                  <span className={styles.frameMeta}>
+                  <span className={cs.frameMeta}>
                     {sku ? formatSkuInches(sku, frame.orientation) : frame.sizeId}
                     {' · '}
                     {frame.photo ? 'Your photo' : 'Empty frame'}
@@ -106,13 +117,13 @@ export function ReviewStage({ onEditDesign }: ReviewStageProps) {
           })}
         </ul>
         {empty > 0 && (
-          <p className={styles.softNote}>
+          <p className={cs.softNote}>
             {empty} frame{empty === 1 ? ' has' : 's have'} no photo, so {empty === 1 ? 'it' : 'they'}’ll be made empty.
           </p>
         )}
       </section>
 
-      <p className={styles.softNote}>
+      <p className={cs.softNote}>
         Total {formatMoney(snapshot.pricing.totalMinor, snapshot.pricing.currency)} including delivery. Sizes shown on your wall are approximate; the frames are made to the sizes listed.
       </p>
 

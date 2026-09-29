@@ -39,7 +39,7 @@ export function Step6Preview({ onExport, isExporting, onOrder, isPreparingOrder 
     >
       <div className={styles.stack}>
         <section className={styles.section} aria-labelledby="compare-heading">
-          <h3 id="compare-heading" className="srOnly">
+          <h3 id="compare-heading" className="sr-only">
             Compare
           </h3>
           <ViewModeControl block />

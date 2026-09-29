@@ -3,12 +3,12 @@ import type { ImageProblem } from '../../../shared/production'
 import { Actions } from './Actions'
 import { useCheckoutStore } from './checkoutStore'
 import { acceptUpdatedPrices, checkPaymentAgain, leaveCheckout, openPayment, previousStage, submitAndPay } from './flow'
-import styles from './checkout.module.css'
+import * as cs from './checkoutStyles'
 
 const BUSY = ['checking', 'uploading', 'creating', 'opening', 'awaiting', 'verifying']
 
 function Spinner() {
-  return <span className={styles.spinner} aria-hidden />
+  return <span className={cs.spinner} aria-hidden />
 }
 
 /** Says, in plain words, exactly where the order and payment stand. */
@@ -20,51 +20,71 @@ function StatusPanel() {
 
   switch (phase) {
     case 'checking':
-      return <p className={styles.status} role="status"><Spinner /> Checking your photos…</p>
+      return (
+        <p className={cs.status} role="status">
+          <Spinner /> Checking your photos…
+        </p>
+      )
     case 'uploading':
       return (
-        <div role="status" className={styles.statusBlock}>
-          <p className={styles.status}><Spinner /> Sending your photos for printing… {progress.done} of {progress.total}</p>
-          <progress className={styles.progressBar} max={Math.max(progress.total, 1)} value={progress.done} aria-label="Photo upload progress" />
+        <div role="status" className={cs.statusBlock}>
+          <p className={cs.status}>
+            <Spinner /> Sending your photos for printing… {progress.done} of {progress.total}
+          </p>
+          <progress className={cs.progressBar} max={Math.max(progress.total, 1)} value={progress.done} aria-label="Photo upload progress" />
         </div>
       )
     case 'creating':
-      return <p className={styles.status} role="status"><Spinner /> Creating your order…</p>
+      return (
+        <p className={cs.status} role="status">
+          <Spinner /> Creating your order…
+        </p>
+      )
     case 'opening':
-      return <p className={styles.status} role="status"><Spinner /> Opening secure payment…</p>
+      return (
+        <p className={cs.status} role="status">
+          <Spinner /> Opening secure payment…
+        </p>
+      )
     case 'awaiting':
       return (
-        <p className={styles.status} role="status">
+        <p className={cs.status} role="status">
           <Spinner /> Waiting for your payment. Complete it in the payment window — you haven’t been charged yet.
         </p>
       )
     case 'verifying':
       return (
-        <div className={styles.statusBlock} role="status">
-          <p className={styles.status}><Spinner /> Confirming your payment…</p>
-          <p className={styles.softNote}>Please keep this page open and don’t pay again.</p>
+        <div className={cs.statusBlock} role="status">
+          <p className={cs.status}>
+            <Spinner /> Confirming your payment…
+          </p>
+          <p className={cs.softNote}>Please keep this page open and don’t pay again.</p>
         </div>
       )
     case 'unconfirmed':
       return (
-        <div className={`${styles.callout} ${styles.calloutWarn}`} role="alert" data-testid="unconfirmed">
-          <p className={styles.calloutTitle}>We’re still confirming your payment</p>
+        <div className={`${cs.callout} ${cs.calloutWarn}`} role="alert" data-testid="unconfirmed">
+          <p className={cs.calloutTitle}>We’re still confirming your payment</p>
           <p>{problem?.message}</p>
-          {order && <p className={styles.softNote}>Your order reference is <strong>{order.publicOrderId}</strong>.</p>}
-          <p className={styles.softNote}>Closed the payment window before finishing? Reopening it continues the same payment — you can’t be charged twice for this order.</p>
+          {order && (
+            <p className={cs.softNote}>
+              Your order reference is <strong>{order.publicOrderId}</strong>.
+            </p>
+          )}
+          <p className={cs.softNote}>Closed the payment window before finishing? Reopening it continues the same payment — you can’t be charged twice for this order.</p>
         </div>
       )
     case 'failed':
       return (
-        <div className={`${styles.callout} ${styles.calloutWarn}`} role="alert" data-testid="payment-failed">
-          <p className={styles.calloutTitle}>That payment didn’t go through</p>
+        <div className={`${cs.callout} ${cs.calloutWarn}`} role="alert" data-testid="payment-failed">
+          <p className={cs.calloutTitle}>That payment didn’t go through</p>
           <p>Nothing was charged. Your order is saved — you can try again, with the same or a different method.</p>
         </div>
       )
     case 'cancelled':
       return (
-        <div className={styles.callout} role="status" data-testid="payment-cancelled">
-          <p className={styles.calloutTitle}>Payment cancelled</p>
+        <div className={cs.callout} role="status" data-testid="payment-cancelled">
+          <p className={cs.calloutTitle}>Payment cancelled</p>
           <p>You haven’t been charged. Your order is saved whenever you’re ready to pay. If you did complete a payment just now, it may take a moment to show — check again before paying twice.</p>
         </div>
       )
@@ -85,16 +105,18 @@ function ErrorPanel() {
   const details = problem.details as { serverTotals?: { totalMinor: number; currency: string }; problems?: ImageProblem[]; frameNumbers?: number[] } | undefined
 
   return (
-    <div className={`${styles.callout} ${styles.calloutWarn}`} role="alert" data-testid="payment-error" data-code={problem.code}>
-      <p className={styles.calloutTitle}>
+    <div className={`${cs.callout} ${cs.calloutWarn}`} role="alert" data-testid="payment-error" data-code={problem.code}>
+      <p className={cs.calloutTitle}>
         {problem.code === 'PRICE_CHANGED' ? 'The price has changed' : problem.code === 'IMAGE_PROBLEMS' ? 'A photo needs attention' : 'We couldn’t place your order'}
       </p>
       <p>{problem.message}</p>
       {problem.code === 'PRICE_CHANGED' && details?.serverTotals && (
-        <p>New total: <strong>{formatMoney(details.serverTotals.totalMinor, details.serverTotals.currency)}</strong></p>
+        <p>
+          New total: <strong>{formatMoney(details.serverTotals.totalMinor, details.serverTotals.currency)}</strong>
+        </p>
       )}
-      {problem.code === 'IMAGE_PROBLEMS' && details?.problems && <p className={styles.softNote}>{describeImageProblems(details.problems)}</p>}
-      <p className={styles.softNote}>Nothing was charged.</p>
+      {problem.code === 'IMAGE_PROBLEMS' && details?.problems && <p className={cs.softNote}>{describeImageProblems(details.problems)}</p>}
+      <p className={cs.softNote}>Nothing was charged.</p>
     </div>
   )
 }
@@ -124,24 +146,26 @@ export function PaymentStage({ onEditDesign }: { onEditDesign: () => void }) {
   else primary = { label: phase === 'error' ? 'Try again' : `Pay ${formatMoney(totalMinor, currency)}`, run: () => void (order && phase === 'error' && code !== 'NETWORK' ? openPayment() : submitAndPay()), disabled: busy }
 
   return (
-    <div className={styles.stage}>
-      <h1 className={styles.stageTitle}>Payment</h1>
-      <p className={styles.stageLead}>One last look, then pay securely.</p>
+    <div className={cs.stage}>
+      <h1 className={cs.stageTitle}>Payment</h1>
+      <p className={cs.stageLead}>One last look, then pay securely.</p>
 
       {serverConfig?.sandbox && (
-        <p className={styles.testBanner} role="note" data-testid="test-mode">
+        <p className={cs.testBanner} role="note" data-testid="test-mode">
           <strong>Test mode.</strong> No real money is charged in this version.
         </p>
       )}
 
-      <dl className={styles.recap}>
+      <dl className={cs.recap}>
         <div>
-          <dt>Contact</dt>
-          <dd>{customer.name} · {customer.mobile}</dd>
+          <dt className={cs.recapDt}>Contact</dt>
+          <dd className={cs.recapDd}>
+            {customer.name} · {customer.mobile}
+          </dd>
         </div>
         <div>
-          <dt>Deliver to</dt>
-          <dd>
+          <dt className={cs.recapDt}>Deliver to</dt>
+          <dd className={cs.recapDd}>
             {delivery.line1}
             {delivery.line2 ? `, ${delivery.line2}` : ''}
             <br />
@@ -171,12 +195,10 @@ export function PaymentStage({ onEditDesign }: { onEditDesign: () => void }) {
       </Actions>
 
       {!busy && phase !== 'unconfirmed' && (
-        <p className={styles.softNote}>
-          You’ll only be charged after you confirm the payment. Card and UPI details go straight to our payment partner — we never see or store them.
-        </p>
+        <p className={cs.softNote}>You’ll only be charged after you confirm the payment. Card and UPI details go straight to our payment partner — we never see or store them.</p>
       )}
       {order && phase !== 'unconfirmed' && !busy && (
-        <p className={styles.softNote}>
+        <p className={cs.softNote}>
           <button type="button" className="btnText" onClick={() => void leaveCheckout()}>
             Cancel this order and edit my design
           </button>

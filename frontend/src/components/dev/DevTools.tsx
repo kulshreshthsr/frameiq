@@ -4,7 +4,6 @@ import { useUIStore } from '../../state/uiStore'
 import { FrameLab } from './FrameLab/FrameLab'
 import { RealismLab } from './RealismLab/RealismLab'
 import { PerspectiveControls } from './PerspectiveControls'
-import styles from './DevTools.module.css'
 
 /**
  * DEVELOPMENT-ONLY tooling: the isolated frame-style lab, the realism test
@@ -25,20 +24,25 @@ export default function DevTools() {
 
   return (
     <>
-      <button type="button" className={styles.toggle} onClick={() => setIsOpen((v) => !v)} aria-label="Developer tools">
+      <button
+        type="button"
+        className="fixed top-3 right-3 z-[70] rounded-md border border-dashed border-line-strong bg-white/80 px-2 py-[3px] text-[10.5px] font-bold tracking-[0.05em] text-ink-3 uppercase opacity-55 hover:opacity-100"
+        onClick={() => setIsOpen((v) => !v)}
+        aria-label="Developer tools"
+      >
         Dev
       </button>
 
       {isOpen && (
-        <div className={styles.panel}>
-          <div className={styles.header}>
+        <div className="shadow-lift fixed top-10 right-3 z-[70] max-h-[70vh] w-[260px] overflow-y-auto rounded-xl border border-line bg-white p-3.5">
+          <div className="mb-3 flex items-center justify-between text-xs font-bold tracking-[0.05em] text-ink-2 uppercase">
             <span>Developer tools</span>
-            <button type="button" className={styles.close} onClick={() => setIsOpen(false)} aria-label="Close">
+            <button type="button" className="border-none bg-none px-1.5 py-0.5 text-lg leading-none text-ink-3" onClick={() => setIsOpen(false)} aria-label="Close">
               ×
             </button>
           </div>
 
-          <div className={styles.stack}>
+          <div className="flex flex-col gap-2">
             <button type="button" className="btn btnSecondary btnCompact" onClick={() => setShowFrameLab(true)}>
               Frame Style Lab
             </button>
@@ -46,7 +50,7 @@ export default function DevTools() {
               Realism Lab
             </button>
 
-            <label className={styles.checkboxRow}>
+            <label className="mt-1.5 flex items-center gap-2 text-[12.5px] font-semibold">
               <input type="checkbox" checked={perspectiveEditMode} onChange={togglePerspectiveEditMode} />
               Perspective corner editing
             </label>

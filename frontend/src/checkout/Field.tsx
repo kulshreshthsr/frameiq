@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import styles from './checkout.module.css'
+import * as cs from './checkoutStyles'
 
 interface FieldProps {
   id: string
@@ -20,18 +20,18 @@ interface FieldProps {
 export function Field({ id, label, hint, error, optional, children }: FieldProps) {
   const messageId = error || hint ? `${id}-message` : undefined
   return (
-    <div className={styles.field}>
-      <label htmlFor={id} className={styles.label}>
+    <div className={cs.field}>
+      <label htmlFor={id} className={cs.label}>
         {label}
-        {optional && <span className={styles.optional}> (optional)</span>}
+        {optional && <span className={cs.optional}> (optional)</span>}
       </label>
       {children({ id, 'aria-invalid': Boolean(error), 'aria-describedby': messageId })}
       {error ? (
-        <p id={messageId} className={styles.errorText} role="alert">
+        <p id={messageId} className={cs.errorText} role="alert">
           {error}
         </p>
       ) : hint ? (
-        <p id={messageId} className={styles.hintText}>
+        <p id={messageId} className={cs.hintText}>
           {hint}
         </p>
       ) : null}

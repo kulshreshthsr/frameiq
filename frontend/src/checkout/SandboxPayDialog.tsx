@@ -2,7 +2,7 @@ import { formatMoney } from '../../../shared/money'
 import { Dialog } from '../components/shared/Dialog'
 import { useCheckoutStore } from './checkoutStore'
 import { resolveSandbox } from './flow'
-import styles from './checkout.module.css'
+import * as cs from './checkoutStyles'
 
 /**
  * A stand-in for the payment provider's own page, shown ONLY when the server
@@ -16,11 +16,11 @@ export function SandboxPayDialog() {
   return (
     <Dialog open={Boolean(payment)} title="Test payment" onClose={() => void resolveSandbox('cancel')}>
       {payment && (
-        <div className={styles.sandbox}>
-          <p className={styles.sandboxBadge}>Test payment</p>
-          <h2 className={styles.sandboxTitle}>Pay {formatMoney(payment.amountMinor, payment.currency)}</h2>
-          <p className={styles.sandboxText}>This is a simulated payment page. No card is used and no money moves. Choose what should happen:</p>
-          <div className={styles.sandboxActions}>
+        <div className={cs.sandbox}>
+          <p className={cs.sandboxBadge}>Test payment</p>
+          <h2 className={cs.sandboxTitle}>Pay {formatMoney(payment.amountMinor, payment.currency)}</h2>
+          <p className={cs.sandboxText}>This is a simulated payment page. No card is used and no money moves. Choose what should happen:</p>
+          <div className={cs.sandboxActions}>
             <button type="button" className="btn btnPrimary btnBlock" onClick={() => void resolveSandbox('succeed')} data-testid="sandbox-succeed">
               Pay successfully
             </button>

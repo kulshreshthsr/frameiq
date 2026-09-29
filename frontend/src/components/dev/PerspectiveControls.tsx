@@ -1,7 +1,6 @@
 import { useCompositionStore } from '../../state/compositionStore'
 import { useUIStore } from '../../state/uiStore'
 import type { FrameInstance } from '../../types/frame'
-import styles from './DevTools.module.css'
 
 interface PerspectiveControlsProps {
   frame: FrameInstance
@@ -18,16 +17,14 @@ export function PerspectiveControls({ frame }: PerspectiveControlsProps) {
   const isActive = Boolean(frame.perspective)
 
   return (
-    <div className={styles.stack}>
-      <p className={styles.note}>
-        {isActive
-          ? 'Drag the corner handles on the canvas to pin this frame to an angled wall.'
-          : 'Not in perspective mode — this frame renders as a normal rectangle.'}
+    <div className="flex flex-col gap-2">
+      <p className="text-[12.5px] text-ink-2">
+        {isActive ? 'Drag the corner handles on the canvas to pin this frame to an angled wall.' : 'Not in perspective mode — this frame renders as a normal rectangle.'}
       </p>
       <button type="button" className="btn btnSecondary btnCompact" onClick={() => setDefaultPerspective(frame.id)}>
         Default perspective
       </button>
-      <div className={styles.row}>
+      <div className="grid grid-cols-2 gap-2">
         <button type="button" className="btn btnSecondary btnCompact" onClick={() => clearPerspective(frame.id)} disabled={!isActive}>
           Reset
         </button>

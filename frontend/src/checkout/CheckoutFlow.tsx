@@ -7,7 +7,7 @@ import { ReviewStage } from './ReviewStage'
 import { SandboxPayDialog } from './SandboxPayDialog'
 import { useCheckoutStore } from './checkoutStore'
 import { leaveCheckout } from './flow'
-import styles from './checkout.module.css'
+import * as cs from './checkoutStyles'
 
 /**
  * The ordering experience, from reviewing the frozen design to the
@@ -26,11 +26,11 @@ export function CheckoutFlow() {
   const showSummary = stage !== 'confirmation' && (hasSnapshot || hasOrder)
 
   return (
-    <div className={styles.checkout} data-testid="checkout">
+    <div className={cs.checkout} data-testid="checkout">
       <CheckoutHeader onBackToDesign={editDesign} />
-      <main className={`${styles.page} ${stage === 'confirmation' ? styles.pageNarrow : ''}`}>
+      <main className={stage === 'confirmation' ? cs.pageNarrow : cs.page}>
         {showSummary && <OrderSummary />}
-        <section className={styles.main}>
+        <section className={cs.main}>
           {stage === 'review' && <ReviewStage onEditDesign={editDesign} />}
           {stage === 'details' && <DetailsStage />}
           {stage === 'delivery' && <DeliveryStage />}

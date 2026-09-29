@@ -3,7 +3,7 @@ import { formatMoney } from '../../../shared/money'
 import { useUIStore } from '../state/uiStore'
 import { useCheckoutStore } from './checkoutStore'
 import { startAnotherDesign } from './flow'
-import styles from './checkout.module.css'
+import * as cs from './checkoutStyles'
 
 /** The moment it becomes real. Shows what was paid for, where it's going, and
  * what happens next — and a way to come back to this page later. */
@@ -30,48 +30,56 @@ export function ConfirmationStage() {
   }
 
   return (
-    <div className={styles.confirmation} data-testid="confirmation">
-      <p className={styles.confirmBadge}>Payment received</p>
-      <h1 className={styles.confirmTitle}>Your frame is officially on its way to becoming real.</h1>
-      <p className={styles.stageLead}>Thank you, {order.customerName.split(' ')[0]}. Here’s everything about your order.</p>
+    <div className={cs.confirmation} data-testid="confirmation">
+      <p className={cs.confirmBadge}>Payment received</p>
+      <h1 className={cs.confirmTitle}>Your frame is officially on its way to becoming real.</h1>
+      <p className={cs.stageLead}>Thank you, {order.customerName.split(' ')[0]}. Here’s everything about your order.</p>
 
-      <div className={styles.orderIdCard}>
-        <span className={styles.orderIdLabel}>Order ID</span>
-        <span className={styles.orderId} data-testid="order-id">{order.publicOrderId}</span>
+      <div className={cs.orderIdCard}>
+        <span className={cs.orderIdLabel}>Order ID</span>
+        <span className={cs.orderId} data-testid="order-id">
+          {order.publicOrderId}
+        </span>
         <button type="button" className="btnText" onClick={() => void copy(order.publicOrderId)}>
           {copied ? 'Copied ✓' : 'Copy'}
         </button>
       </div>
 
-      {previewUrl && <img className={styles.previewImage} src={previewUrl} alt="Your framed wall" />}
+      {previewUrl && <img className={cs.previewImage} src={previewUrl} alt="Your framed wall" />}
 
-      <dl className={styles.confirmFacts}>
+      <dl className={cs.confirmFacts}>
         <div>
-          <dt>Total paid</dt>
-          <dd data-testid="confirm-total">{formatMoney(order.totalMinor, order.currency)}</dd>
+          <dt className={cs.confirmFactsDt}>Total paid</dt>
+          <dd className={cs.confirmFactsDd} data-testid="confirm-total">
+            {formatMoney(order.totalMinor, order.currency)}
+          </dd>
         </div>
         <div>
-          <dt>Delivering to</dt>
-          <dd>{order.deliveryCity}, {order.deliveryState} {order.deliveryPin}</dd>
+          <dt className={cs.confirmFactsDt}>Delivering to</dt>
+          <dd className={cs.confirmFactsDd}>
+            {order.deliveryCity}, {order.deliveryState} {order.deliveryPin}
+          </dd>
         </div>
       </dl>
 
-      <ul className={styles.summaryLines} aria-label="Items in your order">
+      <ul className={cs.summaryLines} aria-label="Items in your order">
         {order.items.map((item) => (
-          <li key={`${item.productId}${item.sizeId}${item.glassName}${item.matName}`} className={styles.summaryLine}>
+          <li key={`${item.productId}${item.sizeId}${item.glassName}${item.matName}`} className={cs.summaryLine}>
             <span>
-              <span className={styles.summaryQty}>{item.quantity} ×</span> {item.productName}
-              <span className={styles.summaryDetail}>{item.sizeLabel}</span>
+              <span className={cs.summaryQty}>{item.quantity} ×</span> {item.productName}
+              <span className={cs.summaryDetail}>{item.sizeLabel}</span>
             </span>
-            <span className={styles.summaryAmount}>{formatMoney(item.lineTotalMinor, order.currency)}</span>
+            <span className={cs.summaryAmount}>{formatMoney(item.lineTotalMinor, order.currency)}</span>
           </li>
         ))}
       </ul>
 
-      <section className={styles.nextSteps} aria-labelledby="next-heading">
-        <h2 id="next-heading" className={styles.sectionHeading}>What happens next</h2>
+      <section className={cs.nextSteps} aria-labelledby="next-heading">
+        <h2 id="next-heading" className={cs.sectionHeading}>
+          What happens next
+        </h2>
         <p>We’ll check your photos and start making your frames. Keep your order ID handy — it’s how we’ll find your order if you contact us.</p>
-        <div className={styles.confirmActions}>
+        <div className={cs.confirmActions}>
           {whatsapp && (
             <a className="btn btnPrimary" href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(message)}`} target="_blank" rel="noopener noreferrer" data-testid="whatsapp">
               Message us on WhatsApp
@@ -86,7 +94,7 @@ export function ConfirmationStage() {
             Design another wall
           </button>
         </div>
-        {link && <p className={styles.softNote}>Keep the link — it’s the private way back to this page on any device.</p>}
+        {link && <p className={cs.softNote}>Keep the link — it’s the private way back to this page on any device.</p>}
       </section>
     </div>
   )

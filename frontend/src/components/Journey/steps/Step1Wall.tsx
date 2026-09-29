@@ -93,7 +93,7 @@ export function Step1Wall() {
               −
             </button>
             <label className={styles.stepperField}>
-              <span className="srOnly">Wall width in centimetres</span>
+              <span className="sr-only">Wall width in centimetres</span>
               <input
                 type="text"
                 inputMode="decimal"

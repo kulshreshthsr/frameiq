@@ -1,7 +1,7 @@
 import { formatMoney } from '../../../shared/money'
 import { useCheckoutStore } from './checkoutStore'
 import { useTotals } from './useTotals'
-import styles from './checkout.module.css'
+import * as cs from './checkoutStyles'
 
 /**
  * "What you're buying": the design, each item, and the price. On a phone it
@@ -22,58 +22,62 @@ export function OrderSummary() {
     <>
       {previewUrl && (
         <img
-          className={styles.summaryPreview}
+          className={cs.summaryPreview}
           src={previewUrl}
           alt="Your design on your wall"
           style={snapshot ? { aspectRatio: `${snapshot.wall.asset.width} / ${snapshot.wall.asset.height}` } : undefined}
         />
       )}
-      <ul className={styles.summaryLines}>
+      <ul className={cs.summaryLines}>
         {totals.lines.map((line) => (
-          <li key={line.key} className={styles.summaryLine}>
+          <li key={line.key} className={cs.summaryLine}>
             <span>
-              <span className={styles.summaryQty}>{line.quantity} ×</span> {line.name}
-              <span className={styles.summaryDetail}>{line.detail}</span>
+              <span className={cs.summaryQty}>{line.quantity} ×</span> {line.name}
+              <span className={cs.summaryDetail}>{line.detail}</span>
             </span>
-            <span className={styles.summaryAmount}>{formatMoney(line.totalMinor, totals.currency)}</span>
+            <span className={cs.summaryAmount}>{formatMoney(line.totalMinor, totals.currency)}</span>
           </li>
         ))}
       </ul>
-      <dl className={styles.summaryTotals}>
-        <div>
+      <dl className="m-0 mt-3">
+        <div className={cs.summaryTotalRow}>
           <dt>Frames</dt>
           <dd>{formatMoney(totals.subtotalMinor, totals.currency)}</dd>
         </div>
-        <div>
+        <div className={cs.summaryTotalRow}>
           <dt>Delivery</dt>
           <dd>{totals.deliveryFeeMinor === 0 ? 'Free' : formatMoney(totals.deliveryFeeMinor, totals.currency)}</dd>
         </div>
-        <div className={styles.summaryGrand}>
-          <dt>Total</dt>
-          <dd data-testid="checkout-total">{formatMoney(totals.totalMinor, totals.currency)}</dd>
+        <div className={cs.summaryGrandRow}>
+          <dt className={cs.summaryGrandDt}>Total</dt>
+          <dd className={cs.summaryGrandDd} data-testid="checkout-total">
+            {formatMoney(totals.totalMinor, totals.currency)}
+          </dd>
         </div>
       </dl>
       {showDestination && (
-        <p className={styles.summaryDestination}>
+        <p className={cs.summaryDestination}>
           Delivering to {delivery.city}, {delivery.state} {delivery.pin}
         </p>
       )}
-      {order && <p className={styles.summaryOrder}>Order {order.publicOrderId}</p>}
+      {order && <p className={cs.summaryOrder}>Order {order.publicOrderId}</p>}
     </>
   )
 
   return (
-    <aside className={styles.summary} aria-label="Order summary">
-      {/* Phones: collapsed to one line. Desktop: always open (see CSS). */}
-      <details className={styles.summaryDetails}>
-        <summary className={styles.summaryToggle}>
-          <span>Order summary · {frames} frame{frames === 1 ? '' : 's'}</span>
-          <span className={styles.summaryToggleTotal}>{formatMoney(totals.totalMinor, totals.currency)}</span>
+    <aside className={cs.summary} aria-label="Order summary">
+      {/* Phones: collapsed to one line. Desktop: always open (see cs.summaryDesktop). */}
+      <details className={cs.summaryDetails}>
+        <summary className={cs.summaryToggle}>
+          <span className={cs.summaryToggleLabel}>
+            Order summary · {frames} frame{frames === 1 ? '' : 's'}
+          </span>
+          <span className={cs.summaryToggleTotal}>{formatMoney(totals.totalMinor, totals.currency)}</span>
         </summary>
-        <div className={styles.summaryBody}>{body}</div>
+        <div className={cs.summaryBody}>{body}</div>
       </details>
-      <div className={styles.summaryDesktop}>
-        <h2 className={styles.summaryHeading}>Your order</h2>
+      <div className={cs.summaryDesktop}>
+        <h2 className={cs.summaryHeading}>Your order</h2>
         {body}
       </div>
     </aside>
