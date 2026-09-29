@@ -8,7 +8,7 @@ import { frameName } from '../../../lib/frameLabels'
 import { PanelShell, StepFooter } from '../PanelShell'
 import { FrameStrip } from '../../shared/FrameStrip'
 import { PhotoQualityNote } from '../../shared/PhotoQualityNote'
-import styles from '../Journey.module.css'
+import * as js from '../journeyStyles'
 
 export function Step3Photos() {
   const frames = useCompositionStore((s) => s.frames)
@@ -58,7 +58,7 @@ export function Step3Photos() {
       onBack={() => leave(() => goToStep(2))}
       footer={<StepFooter primaryLabel="Choose frames" onPrimary={() => leave(() => advanceTo(4))} />}
     >
-      <div className={styles.stack}>
+      <div className={js.stack}>
         <FrameStrip frames={frames} selectedId={selectedFrameId} onSelect={selectFrame} />
 
         <input
@@ -76,24 +76,16 @@ export function Step3Photos() {
         />
 
         {selectedFrame ? (
-          <div className={styles.card} data-testid="selected-frame-card">
-            <p className={styles.cardTitle}>{frameName(selectedIndex)}</p>
-            <button
-              type="button"
-              className="btn btnPrimary btnBlock"
-              onClick={() => fileInput.current?.click()}
-              disabled={isLoading}
-              data-testid="add-photo"
-            >
+          <div className={js.card} data-testid="selected-frame-card">
+            <p className={js.cardTitle}>{frameName(selectedIndex)}</p>
+            <button type="button" className="btn btnPrimary btnBlock" onClick={() => fileInput.current?.click()} disabled={isLoading} data-testid="add-photo">
               {isLoading ? 'Adding…' : selectedFrame.photo ? 'Replace photo' : emptyCount > 1 ? 'Add photos' : 'Add photo'}
             </button>
-            {!selectedFrame.photo && emptyCount > 1 && (
-              <p className={styles.hint}>Choose several at once and we’ll fill your empty frames in order.</p>
-            )}
+            {!selectedFrame.photo && emptyCount > 1 && <p className={js.hint}>Choose several at once and we’ll fill your empty frames in order.</p>}
 
             {selectedFrame.photo && (
               <>
-                <div className={styles.buttonRow}>
+                <div className={js.buttonRow}>
                   <button type="button" className="btn btnSecondary btnCompact" onClick={() => openCropEditor(selectedFrame.id)} data-testid="adjust-photo">
                     Adjust
                   </button>
@@ -109,10 +101,10 @@ export function Step3Photos() {
             )}
           </div>
         ) : (
-          <p className={styles.hint}>Choose a frame above to add its photo.</p>
+          <p className={js.hint}>Choose a frame above to add its photo.</p>
         )}
 
-        <div className={styles.buttonRow}>
+        <div className={js.buttonRow}>
           <button type="button" className="btn btnSecondary btnCompact" onClick={addFrame}>
             + Add a frame
           </button>

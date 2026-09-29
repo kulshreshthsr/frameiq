@@ -2,7 +2,7 @@ import { LAYOUTS, getLayout } from '../../../lib/layouts'
 import { useCompositionStore } from '../../../state/compositionStore'
 import { useJourneyStore } from '../../../state/journeyStore'
 import { PanelShell, StepFooter } from '../PanelShell'
-import styles from '../Journey.module.css'
+import * as js from '../journeyStyles'
 
 export function Step2Layout() {
   const activeLayoutId = useCompositionStore((s) => s.activeLayoutId)
@@ -20,24 +20,16 @@ export function Step2Layout() {
       onBack={() => goToStep(1)}
       footer={<StepFooter primaryLabel="Add your photos" onPrimary={() => advanceTo(3)} />}
     >
-      <div className={`scroller ${styles.layoutList}`} role="radiogroup" aria-label="Layouts">
+      <div className={`scroller ${js.layoutList}`} role="radiogroup" aria-label="Layouts">
         {LAYOUTS.map((layout) => {
           const isActive = layout.id === activeLayoutId
           return (
-            <button
-              key={layout.id}
-              type="button"
-              role="radio"
-              aria-checked={isActive}
-              className={`${styles.layoutCard} ${isActive ? styles.cardActive : ''}`}
-              onClick={() => applyLayout(layout.id)}
-              data-testid={`layout-${layout.id}`}
-            >
-              <span className={styles.layoutPreview} aria-hidden>
+            <button key={layout.id} type="button" role="radio" aria-checked={isActive} className={js.cardState(js.layoutCard, isActive)} onClick={() => applyLayout(layout.id)} data-testid={`layout-${layout.id}`}>
+              <span className={js.layoutPreview} aria-hidden>
                 {layout.slots.map((slot) => (
                   <span
                     key={slot.id}
-                    className={styles.layoutSlot}
+                    className={js.layoutSlot}
                     style={{
                       left: `${(slot.xPct - slot.wPct / 2) * 100}%`,
                       top: `${(slot.yPct - slot.hPct / 2) * 100}%`,
@@ -48,15 +40,15 @@ export function Step2Layout() {
                   />
                 ))}
               </span>
-              <span className={styles.cardName}>{layout.name}</span>
-              <span className={styles.cardMeta}>
+              <span className={js.cardName}>{layout.name}</span>
+              <span className={js.cardMeta}>
                 {layout.slots.length} frame{layout.slots.length === 1 ? '' : 's'}
               </span>
             </button>
           )
         })}
       </div>
-      <p className={styles.hint} aria-live="polite">
+      <p className={js.hint} aria-live="polite">
         {active.description}
       </p>
     </PanelShell>

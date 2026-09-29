@@ -3,14 +3,9 @@ import { useCompositionStore } from '../../../state/compositionStore'
 import { useJourneyStore } from '../../../state/journeyStore'
 import { useWallUpload } from '../../../hooks/useWallUpload'
 import { ACCEPTED_IMAGE_TYPES } from '../../../lib/constants'
-import {
-  MAX_WALL_WIDTH_CM,
-  MIN_WALL_WIDTH_CM,
-  formatWallWidth,
-  isValidWallWidthCm,
-} from '../../../domain/sizing'
+import { MAX_WALL_WIDTH_CM, MIN_WALL_WIDTH_CM, formatWallWidth, isValidWallWidthCm } from '../../../domain/sizing'
 import { PanelShell, StepFooter } from '../PanelShell'
-import styles from '../Journey.module.css'
+import * as js from '../journeyStyles'
 
 const STEP_CM = 10
 
@@ -58,14 +53,14 @@ export function Step1Wall() {
       subtitle="Tell us a little about the wall so your frames sit on it the way they would in real life."
       footer={<StepFooter primaryLabel="Continue to layout" onPrimary={handleContinue} primaryDisabled={!isValid} showPrice={false} />}
     >
-      <div className={styles.stack}>
-        <section className={styles.section} aria-labelledby="mark-heading">
-          <h3 id="mark-heading" className={styles.sectionTitle}>
+      <div className={js.stack}>
+        <section className={js.section} aria-labelledby="mark-heading">
+          <h3 id="mark-heading" className={js.sectionTitle}>
             Mark the wall
           </h3>
           {isMarked ? (
             <>
-              <p className={styles.statusOk}>
+              <p className={js.statusOk}>
                 <span aria-hidden>✓</span> Wall marked. Drag the four corner handles on your photo so they sit on the wall’s edges.
               </p>
               <button type="button" className="btnText" onClick={clearWallRegion}>
@@ -74,9 +69,7 @@ export function Step1Wall() {
             </>
           ) : (
             <>
-              <p className={styles.hint}>
-                Frames go straight onto your photo. If the wall is photographed at an angle, mark it so your frames line up with it.
-              </p>
+              <p className={js.hint}>Frames go straight onto your photo. If the wall is photographed at an angle, mark it so your frames line up with it.</p>
               <button type="button" className="btn btnSecondary btnBlock" onClick={markWall} data-testid="mark-wall">
                 Mark the wall
               </button>
@@ -84,15 +77,15 @@ export function Step1Wall() {
           )}
         </section>
 
-        <section className={styles.section} aria-labelledby="width-heading">
-          <h3 id="width-heading" className={styles.sectionTitle}>
+        <section className={js.section} aria-labelledby="width-heading">
+          <h3 id="width-heading" className={js.sectionTitle}>
             {isMarked ? 'How wide is the marked wall?' : 'How wide is the wall in your photo?'}
           </h3>
-          <div className={styles.stepper}>
-            <button type="button" className={styles.stepperButton} onClick={() => nudge(-STEP_CM)} aria-label={`Narrower by ${STEP_CM} centimetres`}>
+          <div className={js.stepper}>
+            <button type="button" className={js.stepperButton} onClick={() => nudge(-STEP_CM)} aria-label={`Narrower by ${STEP_CM} centimetres`}>
               −
             </button>
-            <label className={styles.stepperField}>
+            <label className={js.stepperField}>
               <span className="sr-only">Wall width in centimetres</span>
               <input
                 type="text"
@@ -110,12 +103,12 @@ export function Step1Wall() {
               />
               <span aria-hidden>cm</span>
             </label>
-            <button type="button" className={styles.stepperButton} onClick={() => nudge(STEP_CM)} aria-label={`Wider by ${STEP_CM} centimetres`}>
+            <button type="button" className={js.stepperButton} onClick={() => nudge(STEP_CM)} aria-label={`Wider by ${STEP_CM} centimetres`}>
               +
             </button>
           </div>
           {isValid ? (
-            <p id="width-help" className={styles.hint}>
+            <p id="width-help" className={js.hint}>
               {formatWallWidth(parsed)}. A rough guess is fine — it lets us show frame sizes to scale.
             </p>
           ) : (

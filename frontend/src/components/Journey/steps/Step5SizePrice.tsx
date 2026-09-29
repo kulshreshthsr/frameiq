@@ -10,7 +10,7 @@ import { PanelShell, StepFooter } from '../PanelShell'
 import { FrameStrip } from '../../shared/FrameStrip'
 import { PhotoQualityNote } from '../../shared/PhotoQualityNote'
 import { QuoteSummary } from '../../shared/QuoteSummary'
-import styles from '../Journey.module.css'
+import * as js from '../journeyStyles'
 import type { FrameProduct, FrameSku } from '../../../domain/catalog'
 
 /** What to offer in the size picker: everything currently sellable, plus
@@ -60,13 +60,7 @@ export function Step5SizePrice() {
 
   if (!reference || !product || !referenceSku) {
     return (
-      <PanelShell
-        step={5}
-        title="Size & price"
-        backLabel="Frames"
-        onBack={() => leave(() => goToStep(4))}
-        footer={<StepFooter primaryLabel="Preview on your wall" onPrimary={() => leave(() => advanceTo(6))} />}
-      >
+      <PanelShell step={5} title="Size & price" backLabel="Frames" onBack={() => leave(() => goToStep(4))} footer={<StepFooter primaryLabel="Preview on your wall" onPrimary={() => leave(() => advanceTo(6))} />}>
         <p className="hint">There are no frames on your wall yet. Go back and choose a layout.</p>
       </PanelShell>
     )
@@ -81,40 +75,30 @@ export function Step5SizePrice() {
       onBack={() => leave(() => goToStep(4))}
       footer={<StepFooter primaryLabel="Preview on your wall" onPrimary={() => leave(() => advanceTo(6))} />}
     >
-      <div className={styles.stack}>
+      <div className={js.stack}>
         <FrameStrip frames={frames} selectedId={selectedFrameId} onSelect={selectFrame} showAll />
 
-        <section className={styles.section} aria-labelledby="size-heading">
-          <h3 id="size-heading" className={styles.sectionTitle}>
-            Size <span className={styles.sectionScope}>· {scopeName}</span>
+        <section className={js.section} aria-labelledby="size-heading">
+          <h3 id="size-heading" className={js.sectionTitle}>
+            Size <span className={js.sectionScope}>· {scopeName}</span>
           </h3>
-          <div className={styles.sizeGrid} role="radiogroup" aria-label={`Size for ${scopeName}`}>
+          <div className={js.sizeGrid} role="radiogroup" aria-label={`Size for ${scopeName}`}>
             {sizesToOffer(product, currentSizeId).map((sku) => {
               const isActive = sku.id === currentSizeId
               const orientation = selectedFrame && !isSquareSku(sku) ? selectedFrame.orientation : 'portrait'
               return (
-                <button
-                  key={sku.id}
-                  type="button"
-                  role="radio"
-                  aria-checked={isActive}
-                  className={`${styles.sizeButton} ${isActive ? styles.cardActive : ''}`}
-                  onClick={() => configureFrames(target, { sizeId: sku.id })}
-                  data-testid={`size-${sku.id}`}
-                >
-                  <span className={styles.sizeMain}>{formatSkuInches(sku, orientation)}</span>
-                  <span className={styles.sizeSub}>{formatSkuCm(sku, orientation)}</span>
-                  <span className={styles.sizePrice}>{formatMoney(sku.priceMinor)}</span>
+                <button key={sku.id} type="button" role="radio" aria-checked={isActive} className={js.cardState(js.sizeButton, isActive)} onClick={() => configureFrames(target, { sizeId: sku.id })} data-testid={`size-${sku.id}`}>
+                  <span className={js.sizeMain}>{formatSkuInches(sku, orientation)}</span>
+                  <span className={js.sizeSub}>{formatSkuCm(sku, orientation)}</span>
+                  <span className={js.sizePrice}>{formatMoney(sku.priceMinor)}</span>
                 </button>
               )
             })}
           </div>
-          {mixedProducts && (
-            <p className={styles.hint}>Sizes shown for {product.name}. Your other frames get their closest matching size.</p>
-          )}
+          {mixedProducts && <p className={js.hint}>Sizes shown for {product.name}. Your other frames get their closest matching size.</p>}
           {selectedFrame && !isSquareSku(referenceSku) && (
-            <div className={styles.inlineField}>
-              <span className={styles.fieldLabel}>Direction</span>
+            <div className={js.inlineField}>
+              <span className={js.fieldLabel}>Direction</span>
               <div className="segmented" role="radiogroup" aria-label="Orientation">
                 {(['portrait', 'landscape'] as const).map((orientation) => (
                   <button
@@ -133,13 +117,13 @@ export function Step5SizePrice() {
           )}
         </section>
 
-        <section className={styles.section} aria-labelledby="options-heading">
-          <h3 id="options-heading" className={styles.sectionTitle}>
-            Finish <span className={styles.sectionScope}>· {scopeName}</span>
+        <section className={js.section} aria-labelledby="options-heading">
+          <h3 id="options-heading" className={js.sectionTitle}>
+            Finish <span className={js.sectionScope}>· {scopeName}</span>
           </h3>
 
-          <div className={styles.inlineField}>
-            <span className={styles.fieldLabel}>Glass</span>
+          <div className={js.inlineField}>
+            <span className={js.fieldLabel}>Glass</span>
             <div className="segmented" role="radiogroup" aria-label="Glass">
               {product.glassOptionIds.map((glassId: GlassId) => (
                 <button
@@ -158,8 +142,8 @@ export function Step5SizePrice() {
             </div>
           </div>
 
-          <div className={styles.inlineField}>
-            <span className={styles.fieldLabel}>Mat</span>
+          <div className={js.inlineField}>
+            <span className={js.fieldLabel}>Mat</span>
             <div className="segmented" role="radiogroup" aria-label="Mat">
               {product.matOptionIds.map((matId: MatId) => (
                 <button
@@ -183,14 +167,14 @@ export function Step5SizePrice() {
           <PhotoQualityNote frame={selectedFrame} onUseSize={(sizeId) => configureFrames(selectedFrame.id, { sizeId })} />
         ) : (
           softPhotos > 0 && (
-            <p className={styles.noteBox} role="note">
+            <p className={js.noteBox} role="note">
               {softPhotos} photo{softPhotos === 1 ? '' : 's'} may print a little soft at these sizes. Select a frame to see options.
             </p>
           )
         )}
 
         {emptyFrames > 0 && (
-          <p className={styles.noteBox} role="note">
+          <p className={js.noteBox} role="note">
             {emptyFrames} frame{emptyFrames === 1 ? ' has' : 's have'} no photo yet.{' '}
             <button type="button" className="btnText" onClick={() => leave(() => goToStep(3))}>
               Add photos
@@ -198,12 +182,12 @@ export function Step5SizePrice() {
           </p>
         )}
 
-        <section className={styles.section} aria-labelledby="design-heading">
-          <h3 id="design-heading" className={styles.sectionTitle}>
+        <section className={js.section} aria-labelledby="design-heading">
+          <h3 id="design-heading" className={js.sectionTitle}>
             Your design
           </h3>
           <QuoteSummary />
-          <p className={styles.fineprint}>
+          <p className={js.fineprint}>
             Prices are estimates for the frames only; delivery isn’t included. Sizes are approximate — based on the wall width you gave.{' '}
             <button type="button" className="btnText" onClick={() => leave(() => goToStep(1))}>
               Change wall width

@@ -10,7 +10,7 @@ import type { FrameInstance } from '../../../types/frame'
 import { PanelShell, StepFooter } from '../PanelShell'
 import { FrameStrip } from '../../shared/FrameStrip'
 import { FrameSwatch } from '../../shared/FrameSwatch'
-import styles from '../Journey.module.css'
+import * as js from '../journeyStyles'
 
 /** What to show under a style's name: its price at the selected frame's size,
  * or a "from" price when the choice covers the whole wall. */
@@ -50,13 +50,13 @@ export function Step4Frames() {
       onBack={() => leave(() => goToStep(3))}
       footer={<StepFooter primaryLabel="Choose size" onPrimary={() => leave(() => advanceTo(5))} />}
     >
-      <div className={styles.stack}>
+      <div className={js.stack}>
         <FrameStrip frames={frames} selectedId={selectedFrameId} onSelect={selectFrame} showAll />
-        <p className={styles.hint} aria-live="polite">
+        <p className={js.hint} aria-live="polite">
           {scopeText}
         </p>
 
-        <div className={`scroller ${styles.productList}`} role="radiogroup" aria-label="Frame styles">
+        <div className={`scroller ${js.productList}`} role="radiogroup" aria-label="Frame styles">
           {activeProducts().map((product) => {
             const isActive = product.id === currentProductId
             return (
@@ -66,20 +66,20 @@ export function Step4Frames() {
                 role="radio"
                 aria-checked={isActive}
                 aria-label={`${product.name}. ${product.tagline}. ${priceLabel(product, selectedFrame)}`}
-                className={`${styles.productCard} ${isActive ? styles.cardActive : ''}`}
+                className={js.cardState(js.productCard, isActive)}
                 onClick={() => configureFrames(selectedFrame?.id ?? 'all', { productId: product.id })}
                 data-testid={`product-${product.id}`}
               >
-                <span className={styles.productSwatch}>
+                <span className={js.productSwatch}>
                   <FrameSwatch productId={product.id} matId={defaultMatFor(product)} photo={previewPhoto} />
                 </span>
-                <span className={styles.cardName}>{product.name}</span>
-                <span className={styles.cardMeta}>{priceLabel(product, selectedFrame)}</span>
+                <span className={js.cardName}>{product.name}</span>
+                <span className={js.cardMeta}>{priceLabel(product, selectedFrame)}</span>
               </button>
             )
           })}
         </div>
-        {currentProductId === null && <p className={styles.hint}>Your frames currently use different styles. Pick one to match them all.</p>}
+        {currentProductId === null && <p className={js.hint}>Your frames currently use different styles. Pick one to match them all.</p>}
       </div>
     </PanelShell>
   )

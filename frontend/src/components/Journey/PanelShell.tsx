@@ -1,7 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react'
 import { STEPS, type StepId } from '../../state/journeyStore'
 import { PriceTag } from '../shared/PriceTag'
-import styles from './Journey.module.css'
+import * as js from './journeyStyles'
 
 interface PanelShellProps {
   step: StepId
@@ -32,8 +32,8 @@ export function PanelShell({ step, title, subtitle, backLabel, onBack, children,
   }, [step])
 
   return (
-    <section className={styles.panel} aria-labelledby="step-title" data-step={step}>
-      <header className={styles.head}>
+    <section className={js.panel} aria-labelledby="step-title" data-step={step}>
+      <header className={js.head}>
         {onBack ? (
           <button type="button" className="btnText" onClick={onBack}>
             <span aria-hidden>‹</span> {backLabel}
@@ -41,20 +41,20 @@ export function PanelShell({ step, title, subtitle, backLabel, onBack, children,
         ) : (
           <span />
         )}
-        <span className={styles.stepCount}>
+        <span className={js.stepCount}>
           Step {step} of {STEPS.length}
         </span>
       </header>
 
-      <div className={styles.body}>
-        <h2 id="step-title" className={styles.title} tabIndex={-1} ref={titleRef}>
+      <div className={js.body}>
+        <h2 id="step-title" className={js.title} tabIndex={-1} ref={titleRef}>
           {title}
         </h2>
-        {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
-        <div className={styles.content}>{children}</div>
+        {subtitle && <p className={js.subtitle}>{subtitle}</p>}
+        <div className={js.content}>{children}</div>
       </div>
 
-      <footer className={styles.foot}>{footer}</footer>
+      <footer className={js.foot}>{footer}</footer>
     </section>
   )
 }
@@ -71,7 +71,7 @@ interface StepFooterProps {
  * obvious way forward. */
 export function StepFooter({ primaryLabel, onPrimary, primaryDisabled = false, showPrice = true }: StepFooterProps) {
   return (
-    <div className={styles.footerRow}>
+    <div className={js.footerRow}>
       {showPrice ? <PriceTag /> : <span />}
       <button type="button" className="btn btnPrimary" onClick={onPrimary} disabled={primaryDisabled} data-testid="primary-action">
         {primaryLabel}

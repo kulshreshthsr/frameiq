@@ -70,42 +70,6 @@
 }
 
 /*
- * TEMPORARY — migration compatibility shim, remove once every *.module.css
- * file is gone. `@theme` above only emits the new `--color-*`/`--radius-*`
- * names; every CSS Module file not yet migrated to Tailwind utilities still
- * reads the old bare names (`var(--ink)`, `var(--card)`, ...), and so does a
- * couple of `var(--x)` references inline in .tsx (LayoutDiagram's SVG fills,
- * a background in BulkPricingPage). Aliasing old → new here means the app
- * stays fully working at every point during the migration, file by file,
- * instead of needing one all-or-nothing cutover.
- */
-:root {
-  --paper: var(--color-paper);
-  --paper-2: var(--color-paper-2);
-  --card: var(--color-card);
-  --ink: var(--color-ink);
-  --ink-2: var(--color-ink-2);
-  --ink-3: var(--color-ink-3);
-  --line: var(--color-line);
-  --line-strong: var(--color-line-strong);
-  --accent: var(--color-accent);
-  --accent-soft: var(--color-accent-soft);
-  --gold-bright: var(--color-gold-bright);
-  --ok: var(--color-ok);
-  --danger: var(--color-danger);
-  --danger-soft: var(--color-danger-soft);
-  --surface-dark: var(--color-surface-dark);
-  --surface-dark-2: var(--color-surface-dark-2);
-  --on-dark: var(--color-on-dark);
-  --on-dark-2: var(--color-on-dark-2);
-  --on-dark-line: var(--color-on-dark-line);
-  --radius: var(--radius-card);
-  --radius-sm: var(--radius-md);
-  --touch: 48px;
-  --safe-bottom: var(--spacing-safe);
-}
-
-/*
  * Everything below is global CSS that Tailwind's utility system has no
  * equivalent for: bare pseudo-selectors applying to every element (not a
  * class), and the couple of page-shell rules that read more clearly here
@@ -225,7 +189,7 @@
   }
 
   .fieldError {
-    @apply text-danger mt-2 flex items-start gap-1.5 text-[13px] leading-snug;
+    @apply text-danger mt-2 flex items-start gap-1.5 text-[13px] leading-[1.4];
   }
 
   /* A horizontally scrolling row that feels native on touch and hides its

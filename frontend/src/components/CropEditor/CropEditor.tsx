@@ -93,7 +93,7 @@ function Editor({ frame, index }: { frame: FrameInstance; index: number }) {
       <p className="-mt-2 text-sm text-ink-2">Drag to reposition. Pinch or use the slider to zoom.</p>
 
       <div
-        className="rounded-card self-center bg-paper-2 p-3 leading-none"
+        className="rounded-card self-center bg-paper-2 p-3 leading-[0]"
         tabIndex={0}
         role="group"
         aria-label="Photo position. Use the arrow keys to move the photo, and plus and minus to zoom."

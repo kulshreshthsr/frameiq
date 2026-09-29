@@ -19,7 +19,10 @@ export const pageNarrow = `${pageBase} grid-cols-[minmax(0,680px)] [grid-templat
 export const main = "[grid-area:main] min-w-0 max-[999px]:w-full max-[999px]:max-w-[640px] max-[999px]:mx-auto max-[999px]:flex-1 max-[999px]:flex max-[999px]:flex-col"
 export const summary = "[grid-area:summary] sticky top-0 self-start max-[999px]:static max-[999px]:order-first max-[999px]:w-full max-[999px]:max-w-[640px] max-[999px]:mx-auto"
 
-export const stage = 'flex flex-col gap-5'
+// Short screens: max-[999px]:flex-1 lets the action bar's margin-top:auto
+// (in `actions` below) push it to the bottom of the step even when the
+// form itself doesn't fill the viewport, instead of floating mid-page.
+export const stage = 'flex flex-col gap-5 max-[999px]:flex-1'
 export const stageTitle = 'font-serif text-[34px] leading-[1.12] font-medium tracking-[-0.015em] max-[999px]:text-[28px]'
 export const stageLead = 'text-ink-2 -mt-2 text-base leading-[1.5] max-[999px]:text-[15px]'
 export const sectionHeading = 'mb-2.5 text-[13px] font-bold tracking-[0.06em] text-ink uppercase'
@@ -42,7 +45,7 @@ export const summaryDestination = 'mt-3 text-[13px] text-ink-3'
 export const summaryOrder = 'mt-3 text-[13px] text-ink-3'
 
 // Mobile-only collapsed summary (a <details>, hidden entirely on desktop).
-export const summaryDetails = 'hidden max-[999px]:block max-[999px]:rounded-xl max-[999px]:border max-[999px]:border-line max-[999px]:bg-card'
+export const summaryDetails = 'hidden max-[999px]:block max-[999px]:rounded-card max-[999px]:border max-[999px]:border-line max-[999px]:bg-card'
 export const summaryToggle =
   "group flex min-h-13 list-none cursor-pointer items-center justify-between px-4 text-sm font-semibold " +
   "[&::-webkit-details-marker]:hidden after:ml-2.5 after:text-ink-3 after:content-['▾'] group-open:after:content-['▴']"
@@ -76,8 +79,8 @@ export const select =
   'appearance-none bg-[length:5px_5px] bg-no-repeat pr-10 ' +
   '[background-image:linear-gradient(45deg,transparent_50%,var(--color-ink-2)_50%),linear-gradient(135deg,var(--color-ink-2)_50%,transparent_50%)] ' +
   '[background-position:calc(100%-20px)_50%,calc(100%-15px)_50%]'
-export const errorText = 'text-danger flex gap-1.5 text-[13.5px] leading-snug'
-export const hintText = 'text-ink-3 text-[13.5px] leading-snug'
+export const errorText = 'text-danger flex gap-1.5 text-[13.5px] leading-[1.4]'
+export const hintText = 'text-ink-3 text-[13.5px] leading-[1.4]'
 
 // ------------------------------------------------------------- actions
 // The sticky mobile action bar: total on the left, the one primary button

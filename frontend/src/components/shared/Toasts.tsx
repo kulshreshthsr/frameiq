@@ -13,7 +13,7 @@ function Toast({ notice }: { notice: Notice }) {
 
   return (
     <div
-      className={`shadow-lift rounded-card flex items-start gap-2.5 py-3 pr-2 pl-4 text-sm leading-snug text-paper ${notice.kind === 'error' ? 'bg-[#5a1f19]' : 'bg-ink'}`}
+      className={`shadow-lift rounded-card flex items-start gap-2.5 py-3 pr-2 pl-4 text-sm leading-[1.4] text-paper ${notice.kind === 'error' ? 'bg-[#5a1f19]' : 'bg-ink'}`}
       // Errors interrupt; everything else waits its turn.
       role={notice.kind === 'error' ? 'alert' : 'status'}
     >
