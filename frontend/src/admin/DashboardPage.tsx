@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { formatMoney } from '../../../shared/money'
 import { adminApi } from './adminApi'
 import { Link } from './Link'
-import styles from './admin.module.css'
+import * as adminStyles from './adminStyles'
 import type { AdminDashboard } from '../../../shared/admin'
 
 function describeChange(entry: AdminDashboard['recentPriceChanges'][number]): string {
@@ -27,73 +27,77 @@ export function DashboardPage() {
     }
   }, [])
 
-  if (error) return <p className={`${styles.banner} ${styles.bannerError}`}>{error}</p>
+  if (error) return <p className={adminStyles.banner('error')}>{error}</p>
   if (!data) return <p role="status">Loading…</p>
 
   return (
-    <div className={styles.page} data-testid="dashboard">
-      <div className={styles.pageHeader}>
-        <h1 className={styles.pageTitle}>Dashboard</h1>
+    <div className={adminStyles.page} data-testid="dashboard">
+      <div className={adminStyles.pageHeader}>
+        <h1 className={adminStyles.pageTitle}>Dashboard</h1>
       </div>
 
-      <div className={styles.cardGrid}>
-        <div className={styles.statCard}>
-          <div className={styles.statValue}>{data.activeProductCount}</div>
-          <div className={styles.statLabel}>Active products</div>
+      <div className={adminStyles.cardGrid}>
+        <div className={adminStyles.statCard}>
+          <div className={adminStyles.statValue}>{data.activeProductCount}</div>
+          <div className={adminStyles.statLabel}>Active products</div>
         </div>
-        <div className={styles.statCard}>
-          <div className={styles.statValue}>{data.activeSkuCount}</div>
-          <div className={styles.statLabel}>Active sizes (SKUs)</div>
+        <div className={adminStyles.statCard}>
+          <div className={adminStyles.statValue}>{data.activeSkuCount}</div>
+          <div className={adminStyles.statLabel}>Active sizes (SKUs)</div>
         </div>
-        <div className={styles.statCard}>
-          <div className={styles.statValue}>{data.inactiveProductCount}</div>
-          <div className={styles.statLabel}>Inactive products</div>
+        <div className={adminStyles.statCard}>
+          <div className={adminStyles.statValue}>{data.inactiveProductCount}</div>
+          <div className={adminStyles.statLabel}>Inactive products</div>
         </div>
-        <div className={styles.statCard}>
-          <div className={styles.statValue}>{data.inactiveSkuCount}</div>
-          <div className={styles.statLabel}>Inactive sizes</div>
+        <div className={adminStyles.statCard}>
+          <div className={adminStyles.statValue}>{data.inactiveSkuCount}</div>
+          <div className={adminStyles.statLabel}>Inactive sizes</div>
         </div>
       </div>
 
-      <div className={styles.panel}>
-        <h2 className={styles.panelTitle}>Recent price changes</h2>
+      <div className={adminStyles.panel}>
+        <h2 className={adminStyles.panelTitle}>Recent price changes</h2>
         {data.recentPriceChanges.length === 0 ? (
-          <p className={styles.hint}>No changes yet.</p>
+          <p className={adminStyles.hint}>No changes yet.</p>
         ) : (
-          <div className={styles.historyList}>
+          <div className={adminStyles.historyList}>
             {data.recentPriceChanges.map((entry) => (
-              <div key={entry.id} className={styles.historyRow}>
+              <div key={entry.id} className={adminStyles.historyRow}>
                 <span>{describeChange(entry)}</span>
-                <span className={styles.historyMeta}>{entry.actorName}</span>
+                <span className={adminStyles.historyMeta}>{entry.actorName}</span>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      <div className={styles.panel}>
-        <h2 className={styles.panelTitle}>Recent orders</h2>
+      <div className={adminStyles.panel}>
+        <h2 className={adminStyles.panelTitle}>Recent orders</h2>
         {data.recentOrders.length === 0 ? (
-          <p className={styles.hint}>No orders yet.</p>
+          <p className={adminStyles.hint}>No orders yet.</p>
         ) : (
-          <table className={styles.table}>
+          <table className={adminStyles.table}>
             <thead>
               <tr>
-                <th>Order</th>
-                <th>Customer</th>
-                <th>Status</th>
-                <th className={styles.numeric}>Total</th>
+                <th className={adminStyles.tableTh}>Order</th>
+                <th className={adminStyles.tableTh}>Customer</th>
+                <th className={adminStyles.tableTh}>Status</th>
+                <th className={`${adminStyles.tableTh} ${adminStyles.numeric}`}>Total</th>
               </tr>
             </thead>
             <tbody>
               {data.recentOrders.map((order) => (
                 <tr key={order.publicOrderId}>
-                  <td data-label="Order">
+                  <td className={adminStyles.tableTd} data-label="Order">
                     <Link to={`/admin/orders/${order.publicOrderId}`}>{order.publicOrderId}</Link>
                   </td>
-                  <td data-label="Customer">{order.customerName}</td>
-                  <td data-label="Status">{order.paymentStatus}</td>
-                  <td className={styles.numeric} data-label="Total">
+                  <td className={adminStyles.tableTd} data-label="Customer">
+                    {order.customerName}
+                  </td>
+                  <td className={adminStyles.tableTd} data-label="Status">
+                    {order.paymentStatus}
+                  </td>
+                  <td className={`${adminStyles.tableTd} ${adminStyles.numeric}`} data-label="Total">
                     {formatMoney(order.totalMinor, order.currency)}
                   </td>
                 </tr>

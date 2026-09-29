@@ -3,12 +3,12 @@ import { formatMoney } from '../../../shared/money'
 import type { AdminOrderSummary } from '../../../shared/admin'
 import { adminApi } from './adminApi'
 import { Link } from './Link'
-import styles from './admin.module.css'
+import * as adminStyles from './adminStyles'
 
-function statusBadge(status: string): string {
-  if (status === 'paid') return styles.badgePaid
-  if (status === 'failed' || status === 'cancelled') return styles.badgeFailed
-  return styles.badgePending
+function statusBadge(status: string): 'paid' | 'failed' | 'pending' {
+  if (status === 'paid') return 'paid'
+  if (status === 'failed' || status === 'cancelled') return 'failed'
+  return 'pending'
 }
 
 export function OrdersPage() {
@@ -37,46 +37,50 @@ export function OrdersPage() {
   }
 
   return (
-    <div className={styles.page} data-testid="orders-page">
-      <div className={styles.pageHeader}>
-        <h1 className={styles.pageTitle}>Orders</h1>
+    <div className={adminStyles.page} data-testid="orders-page">
+      <div className={adminStyles.pageHeader}>
+        <h1 className={adminStyles.pageTitle}>Orders</h1>
       </div>
-      {error && <p className={`${styles.banner} ${styles.bannerError}`}>{error}</p>}
+      {error && <p className={adminStyles.banner('error')}>{error}</p>}
       {!orders ? (
         <p role="status">Loading…</p>
       ) : orders.length === 0 ? (
-        <p className={styles.emptyState}>No orders yet.</p>
+        <p className={adminStyles.emptyState}>No orders yet.</p>
       ) : (
         <>
-          <table className={styles.table}>
+          <table className={adminStyles.table}>
             <thead>
               <tr>
-                <th>Order</th>
-                <th>Customer</th>
-                <th>Placed</th>
-                <th>Payment</th>
-                <th className={styles.numeric}>Total</th>
+                <th className={adminStyles.tableTh}>Order</th>
+                <th className={adminStyles.tableTh}>Customer</th>
+                <th className={adminStyles.tableTh}>Placed</th>
+                <th className={adminStyles.tableTh}>Payment</th>
+                <th className={`${adminStyles.tableTh} ${adminStyles.numeric}`}>Total</th>
               </tr>
             </thead>
             <tbody>
               {orders.map((order) => (
                 <tr key={order.publicOrderId} data-testid={`order-row-${order.publicOrderId}`}>
-                  <td data-label="Order">
+                  <td className={adminStyles.tableTd} data-label="Order">
                     <Link to={`/admin/orders/${order.publicOrderId}`}>{order.publicOrderId}</Link>
                   </td>
-                  <td data-label="Customer">{order.customerName}</td>
-                  <td data-label="Placed">{new Date(order.createdAt).toLocaleString()}</td>
-                  <td data-label="Payment">
-                    <span className={`${styles.badge} ${statusBadge(order.paymentStatus)}`}>{order.paymentStatus}</span>
+                  <td className={adminStyles.tableTd} data-label="Customer">
+                    {order.customerName}
                   </td>
-                  <td className={styles.numeric} data-label="Total">
+                  <td className={adminStyles.tableTd} data-label="Placed">
+                    {new Date(order.createdAt).toLocaleString()}
+                  </td>
+                  <td className={adminStyles.tableTd} data-label="Payment">
+                    <span className={adminStyles.badge(statusBadge(order.paymentStatus))}>{order.paymentStatus}</span>
+                  </td>
+                  <td className={`${adminStyles.tableTd} ${adminStyles.numeric}`} data-label="Total">
                     {formatMoney(order.totalMinor, order.currency)}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <div className={styles.formActions} style={{ marginTop: 12 }}>
+          <div className={`${adminStyles.formActions} mt-3`}>
             <button type="button" className="btn btnSecondary" onClick={() => void loadMore()} disabled={loadingMore}>
               {loadingMore ? 'Loading…' : 'Load more'}
             </button>

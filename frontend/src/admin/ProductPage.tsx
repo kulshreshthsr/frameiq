@@ -5,7 +5,7 @@ import { useAdminCatalog } from './catalogStore'
 import { Link } from './Link'
 import { navigate } from './router'
 import { PriceHistory } from './PriceHistory'
-import styles from './admin.module.css'
+import * as adminStyles from './adminStyles'
 import type { AdminProductView, AdminSizeView } from '../../../shared/admin'
 
 function friendlyError(error: unknown, fallback: string): string {
@@ -28,7 +28,7 @@ export function ProductPage({ id }: { id: string | null }) {
   if (id === null) return <NewProductForm />
   if (!catalog) return <p role="status">Loading…</p>
   const product = catalog.products.find((p) => p.id === id)
-  if (!product) return <p className={styles.emptyState}>No such product.</p>
+  if (!product) return <p className={adminStyles.emptyState}>No such product.</p>
   return <ExistingProduct product={product} glassOptions={catalog.glassOptions} matOptions={catalog.matOptions} />
 }
 
@@ -64,49 +64,65 @@ function NewProductForm() {
   }
 
   return (
-    <div className={styles.page}>
-      <div className={styles.pageHeader}>
+    <div className={adminStyles.page}>
+      <div className={adminStyles.pageHeader}>
         <div>
-          <Link to="/admin/catalog" className={styles.crumb}>
+          <Link to="/admin/catalog" className={adminStyles.crumb}>
             ‹ Catalog
           </Link>
-          <h1 className={styles.pageTitle}>New product</h1>
+          <h1 className={adminStyles.pageTitle}>New product</h1>
         </div>
       </div>
-      <p className={styles.hint} style={{ marginBottom: 16 }}>
-        A new product starts inactive. Add at least one size, then activate it.
-      </p>
-      {error && <p className={`${styles.banner} ${styles.bannerError}`}>{error}</p>}
-      <form className={styles.form} onSubmit={(e) => void submit(e)} data-testid="new-product-form">
-        <div className={styles.field}>
-          <label htmlFor="np-id">Product id (used in URLs, can’t change later)</label>
-          <input id="np-id" className={styles.input} required pattern="[a-z][a-z0-9-]{1,39}" value={fields.id} onChange={(e) => setFields((f) => ({ ...f, id: e.target.value }))} data-testid="field-id" />
+      <p className={`${adminStyles.hint} mb-4`}>A new product starts inactive. Add at least one size, then activate it.</p>
+      {error && <p className={adminStyles.banner('error')}>{error}</p>}
+      <form className={adminStyles.form} onSubmit={(e) => void submit(e)} data-testid="new-product-form">
+        <div className={adminStyles.field}>
+          <label htmlFor="np-id" className={adminStyles.fieldLabel}>
+            Product id (used in URLs, can’t change later)
+          </label>
+          <input
+            id="np-id"
+            className={adminStyles.inputBase}
+            required
+            pattern="[a-z][a-z0-9-]{1,39}"
+            value={fields.id}
+            onChange={(e) => setFields((f) => ({ ...f, id: e.target.value }))}
+            data-testid="field-id"
+          />
         </div>
-        <div className={styles.field}>
-          <label htmlFor="np-name">Name</label>
-          <input id="np-name" className={styles.input} required value={fields.name} onChange={(e) => setFields((f) => ({ ...f, name: e.target.value }))} data-testid="field-name" />
+        <div className={adminStyles.field}>
+          <label htmlFor="np-name" className={adminStyles.fieldLabel}>
+            Name
+          </label>
+          <input id="np-name" className={adminStyles.inputBase} required value={fields.name} onChange={(e) => setFields((f) => ({ ...f, name: e.target.value }))} data-testid="field-name" />
         </div>
-        <div className={styles.field}>
-          <label htmlFor="np-tagline">Tagline</label>
-          <input id="np-tagline" className={styles.input} required value={fields.tagline} onChange={(e) => setFields((f) => ({ ...f, tagline: e.target.value }))} />
+        <div className={adminStyles.field}>
+          <label htmlFor="np-tagline" className={adminStyles.fieldLabel}>
+            Tagline
+          </label>
+          <input id="np-tagline" className={adminStyles.inputBase} required value={fields.tagline} onChange={(e) => setFields((f) => ({ ...f, tagline: e.target.value }))} />
         </div>
-        <div className={styles.field}>
-          <label htmlFor="np-desc">Description</label>
-          <textarea id="np-desc" className={styles.textarea} required value={fields.description} onChange={(e) => setFields((f) => ({ ...f, description: e.target.value }))} />
+        <div className={adminStyles.field}>
+          <label htmlFor="np-desc" className={adminStyles.fieldLabel}>
+            Description
+          </label>
+          <textarea id="np-desc" className={adminStyles.textarea} required value={fields.description} onChange={(e) => setFields((f) => ({ ...f, description: e.target.value }))} />
         </div>
-        <div className={styles.field}>
-          <label htmlFor="np-style">Rendering style id</label>
-          <input id="np-style" className={styles.input} required value={fields.styleId} onChange={(e) => setFields((f) => ({ ...f, styleId: e.target.value }))} />
+        <div className={adminStyles.field}>
+          <label htmlFor="np-style" className={adminStyles.fieldLabel}>
+            Rendering style id
+          </label>
+          <input id="np-style" className={adminStyles.inputBase} required value={fields.styleId} onChange={(e) => setFields((f) => ({ ...f, styleId: e.target.value }))} />
         </div>
-        <label className={styles.checkboxRow}>
-          <input type="checkbox" checked={fields.shipsWithMat} onChange={(e) => setFields((f) => ({ ...f, shipsWithMat: e.target.checked }))} />
+        <label className={adminStyles.checkboxRow}>
+          <input type="checkbox" className={adminStyles.checkboxInput} checked={fields.shipsWithMat} onChange={(e) => setFields((f) => ({ ...f, shipsWithMat: e.target.checked }))} />
           Ships with a mat by default
         </label>
         <fieldset>
           <legend>Glass options</legend>
           {(catalog?.glassOptions ?? []).map((g) => (
-            <label key={g.id} className={styles.checkboxRow}>
-              <input type="checkbox" checked={glass.includes(g.id)} onChange={(e) => setGlass((cur) => (e.target.checked ? [...cur, g.id] : cur.filter((x) => x !== g.id)))} />
+            <label key={g.id} className={adminStyles.checkboxRow}>
+              <input type="checkbox" className={adminStyles.checkboxInput} checked={glass.includes(g.id)} onChange={(e) => setGlass((cur) => (e.target.checked ? [...cur, g.id] : cur.filter((x) => x !== g.id)))} />
               {g.name}
             </label>
           ))}
@@ -114,13 +130,13 @@ function NewProductForm() {
         <fieldset>
           <legend>Mat options</legend>
           {(catalog?.matOptions ?? []).map((m) => (
-            <label key={m.id} className={styles.checkboxRow}>
-              <input type="checkbox" checked={mat.includes(m.id)} onChange={(e) => setMat((cur) => (e.target.checked ? [...cur, m.id] : cur.filter((x) => x !== m.id)))} />
+            <label key={m.id} className={adminStyles.checkboxRow}>
+              <input type="checkbox" className={adminStyles.checkboxInput} checked={mat.includes(m.id)} onChange={(e) => setMat((cur) => (e.target.checked ? [...cur, m.id] : cur.filter((x) => x !== m.id)))} />
               {m.name}
             </label>
           ))}
         </fieldset>
-        <div className={styles.formActions}>
+        <div className={adminStyles.formActions}>
           <button type="submit" className="btn btnPrimary" disabled={busy} data-testid="create-product-submit">
             {busy ? 'Creating…' : 'Create product'}
           </button>
@@ -185,49 +201,55 @@ function ExistingProduct({ product, glassOptions, matOptions }: { product: Admin
   }
 
   return (
-    <div className={styles.page} data-testid="product-page">
-      <div className={styles.pageHeader}>
+    <div className={adminStyles.page} data-testid="product-page">
+      <div className={adminStyles.pageHeader}>
         <div>
-          <Link to="/admin/catalog" className={styles.crumb}>
+          <Link to="/admin/catalog" className={adminStyles.crumb}>
             ‹ Catalog
           </Link>
-          <h1 className={styles.pageTitle}>{product.name}</h1>
+          <h1 className={adminStyles.pageTitle}>{product.name}</h1>
         </div>
-        <div className={styles.pageActions}>
-          <span className={`${styles.badge} ${product.active ? styles.badgeActive : styles.badgeInactive}`}>{product.active ? 'Active' : 'Inactive'}</span>
+        <div className={adminStyles.pageActions}>
+          <span className={adminStyles.badge(product.active ? 'active' : 'inactive')}>{product.active ? 'Active' : 'Inactive'}</span>
           <button type="button" className="btn btnSecondary" onClick={() => void toggleActive()} disabled={busy} data-testid="toggle-active">
             {product.active ? 'Deactivate' : 'Activate'}
           </button>
         </div>
       </div>
 
-      {error && <p className={`${styles.banner} ${styles.bannerError}`}>{error}</p>}
-      {notice && <p className={`${styles.banner} ${styles.bannerSuccess}`}>{notice}</p>}
+      {error && <p className={adminStyles.banner('error')}>{error}</p>}
+      {notice && <p className={adminStyles.banner('success')}>{notice}</p>}
 
-      <div className={styles.panel}>
-        <h2 className={styles.panelTitle}>Details</h2>
-        <form className={styles.form} onSubmit={(e) => void saveFields(e)}>
-          <div className={styles.field}>
-            <label htmlFor="pf-name">Name</label>
-            <input id="pf-name" className={styles.input} value={fields.name} onChange={(e) => setFields((f) => ({ ...f, name: e.target.value }))} data-testid="field-name" />
+      <div className={adminStyles.panel}>
+        <h2 className={adminStyles.panelTitle}>Details</h2>
+        <form className={adminStyles.form} onSubmit={(e) => void saveFields(e)}>
+          <div className={adminStyles.field}>
+            <label htmlFor="pf-name" className={adminStyles.fieldLabel}>
+              Name
+            </label>
+            <input id="pf-name" className={adminStyles.inputBase} value={fields.name} onChange={(e) => setFields((f) => ({ ...f, name: e.target.value }))} data-testid="field-name" />
           </div>
-          <div className={styles.field}>
-            <label htmlFor="pf-tagline">Tagline</label>
-            <input id="pf-tagline" className={styles.input} value={fields.tagline} onChange={(e) => setFields((f) => ({ ...f, tagline: e.target.value }))} />
+          <div className={adminStyles.field}>
+            <label htmlFor="pf-tagline" className={adminStyles.fieldLabel}>
+              Tagline
+            </label>
+            <input id="pf-tagline" className={adminStyles.inputBase} value={fields.tagline} onChange={(e) => setFields((f) => ({ ...f, tagline: e.target.value }))} />
           </div>
-          <div className={styles.field}>
-            <label htmlFor="pf-desc">Description</label>
-            <textarea id="pf-desc" className={styles.textarea} value={fields.description} onChange={(e) => setFields((f) => ({ ...f, description: e.target.value }))} />
+          <div className={adminStyles.field}>
+            <label htmlFor="pf-desc" className={adminStyles.fieldLabel}>
+              Description
+            </label>
+            <textarea id="pf-desc" className={adminStyles.textarea} value={fields.description} onChange={(e) => setFields((f) => ({ ...f, description: e.target.value }))} />
           </div>
-          <label className={styles.checkboxRow}>
-            <input type="checkbox" checked={fields.shipsWithMat} onChange={(e) => setFields((f) => ({ ...f, shipsWithMat: e.target.checked }))} />
+          <label className={adminStyles.checkboxRow}>
+            <input type="checkbox" className={adminStyles.checkboxInput} checked={fields.shipsWithMat} onChange={(e) => setFields((f) => ({ ...f, shipsWithMat: e.target.checked }))} />
             Ships with a mat by default
           </label>
           <fieldset>
             <legend>Glass</legend>
             {glassOptions.map((g) => (
-              <label key={g.id} className={styles.checkboxRow}>
-                <input type="checkbox" checked={glass.includes(g.id)} onChange={(e) => setGlass((cur) => (e.target.checked ? [...cur, g.id] : cur.filter((x) => x !== g.id)))} />
+              <label key={g.id} className={adminStyles.checkboxRow}>
+                <input type="checkbox" className={adminStyles.checkboxInput} checked={glass.includes(g.id)} onChange={(e) => setGlass((cur) => (e.target.checked ? [...cur, g.id] : cur.filter((x) => x !== g.id)))} />
                 {g.name}
               </label>
             ))}
@@ -235,13 +257,13 @@ function ExistingProduct({ product, glassOptions, matOptions }: { product: Admin
           <fieldset>
             <legend>Mat</legend>
             {matOptions.map((m) => (
-              <label key={m.id} className={styles.checkboxRow}>
-                <input type="checkbox" checked={mat.includes(m.id)} onChange={(e) => setMat((cur) => (e.target.checked ? [...cur, m.id] : cur.filter((x) => x !== m.id)))} />
+              <label key={m.id} className={adminStyles.checkboxRow}>
+                <input type="checkbox" className={adminStyles.checkboxInput} checked={mat.includes(m.id)} onChange={(e) => setMat((cur) => (e.target.checked ? [...cur, m.id] : cur.filter((x) => x !== m.id)))} />
                 {m.name}
               </label>
             ))}
           </fieldset>
-          <div className={styles.formActions}>
+          <div className={adminStyles.formActions}>
             <button type="submit" className="btn btnPrimary" disabled={busy} data-testid="save-product">
               Save changes
             </button>
@@ -265,25 +287,25 @@ function SizesPanel({ product }: { product: AdminProductView }) {
   const sizes = useMemo(() => [...product.sizes].sort((a, b) => a.priceMinor - b.priceMinor), [product.sizes])
 
   return (
-    <div className={styles.panel}>
-      <div className={styles.pageHeader} style={{ marginBottom: 12 }}>
-        <h2 className={styles.panelTitle}>Sizes</h2>
+    <div className={adminStyles.panel}>
+      <div className={`${adminStyles.pageHeader} mb-3`}>
+        <h2 className={adminStyles.panelTitle}>Sizes</h2>
         <button type="button" className="btnText" onClick={() => setAdding((a) => !a)} data-testid="add-size-toggle">
           {adding ? 'Cancel' : '+ Add size'}
         </button>
       </div>
-      {error && <p className={`${styles.banner} ${styles.bannerError}`}>{error}</p>}
+      {error && <p className={adminStyles.banner('error')}>{error}</p>}
       {adding && <AddSizeForm productId={product.id} onDone={() => setAdding(false)} onError={setError} />}
 
-      <table className={styles.table}>
+      <table className={adminStyles.table}>
         <thead>
           <tr>
-            <th>Size</th>
-            <th className={styles.numeric}>Price</th>
-            <th className={styles.numeric}>Glass surcharge</th>
-            <th className={styles.numeric}>Mat surcharge</th>
-            <th>Status</th>
-            <th />
+            <th className={adminStyles.tableTh}>Size</th>
+            <th className={`${adminStyles.tableTh} ${adminStyles.numeric}`}>Price</th>
+            <th className={`${adminStyles.tableTh} ${adminStyles.numeric}`}>Glass surcharge</th>
+            <th className={`${adminStyles.tableTh} ${adminStyles.numeric}`}>Mat surcharge</th>
+            <th className={adminStyles.tableTh}>Status</th>
+            <th className={adminStyles.tableTh} />
           </tr>
         </thead>
         <tbody>
@@ -335,28 +357,38 @@ function AddSizeForm({ productId, onDone, onError }: { productId: string; onDone
   }
 
   return (
-    <form className={styles.form} onSubmit={(e) => void submit(e)} data-testid="add-size-form">
-      <div className={styles.field}>
-        <label htmlFor="as-id">Size id</label>
-        <input id="as-id" className={styles.input} required value={fields.id} onChange={(e) => setFields((f) => ({ ...f, id: e.target.value }))} data-testid="size-id" />
+    <form className={adminStyles.form} onSubmit={(e) => void submit(e)} data-testid="add-size-form">
+      <div className={adminStyles.field}>
+        <label htmlFor="as-id" className={adminStyles.fieldLabel}>
+          Size id
+        </label>
+        <input id="as-id" className={adminStyles.inputBase} required value={fields.id} onChange={(e) => setFields((f) => ({ ...f, id: e.target.value }))} data-testid="size-id" />
       </div>
-      <div className={styles.field}>
-        <label htmlFor="as-label">Display label</label>
-        <input id="as-label" className={styles.input} required placeholder="8 × 10 in" value={fields.displayLabel} onChange={(e) => setFields((f) => ({ ...f, displayLabel: e.target.value }))} />
+      <div className={adminStyles.field}>
+        <label htmlFor="as-label" className={adminStyles.fieldLabel}>
+          Display label
+        </label>
+        <input id="as-label" className={adminStyles.inputBase} required placeholder="8 × 10 in" value={fields.displayLabel} onChange={(e) => setFields((f) => ({ ...f, displayLabel: e.target.value }))} />
       </div>
-      <div className={styles.field}>
-        <label htmlFor="as-width">Width (in, portrait)</label>
-        <input id="as-width" className={styles.input} type="number" min="0" step="0.1" required value={fields.width} onChange={(e) => setFields((f) => ({ ...f, width: e.target.value }))} />
+      <div className={adminStyles.field}>
+        <label htmlFor="as-width" className={adminStyles.fieldLabel}>
+          Width (in, portrait)
+        </label>
+        <input id="as-width" className={adminStyles.inputBase} type="number" min="0" step="0.1" required value={fields.width} onChange={(e) => setFields((f) => ({ ...f, width: e.target.value }))} />
       </div>
-      <div className={styles.field}>
-        <label htmlFor="as-height">Height (in, portrait)</label>
-        <input id="as-height" className={styles.input} type="number" min="0" step="0.1" required value={fields.height} onChange={(e) => setFields((f) => ({ ...f, height: e.target.value }))} />
+      <div className={adminStyles.field}>
+        <label htmlFor="as-height" className={adminStyles.fieldLabel}>
+          Height (in, portrait)
+        </label>
+        <input id="as-height" className={adminStyles.inputBase} type="number" min="0" step="0.1" required value={fields.height} onChange={(e) => setFields((f) => ({ ...f, height: e.target.value }))} />
       </div>
-      <div className={styles.field}>
-        <label htmlFor="as-price">Price (₹)</label>
-        <input id="as-price" className={styles.input} type="number" min="0" step="1" required value={fields.priceMinor} onChange={(e) => setFields((f) => ({ ...f, priceMinor: e.target.value }))} data-testid="size-price" />
+      <div className={adminStyles.field}>
+        <label htmlFor="as-price" className={adminStyles.fieldLabel}>
+          Price (₹)
+        </label>
+        <input id="as-price" className={adminStyles.inputBase} type="number" min="0" step="1" required value={fields.priceMinor} onChange={(e) => setFields((f) => ({ ...f, priceMinor: e.target.value }))} data-testid="size-price" />
       </div>
-      <div className={styles.formActions}>
+      <div className={adminStyles.formActions}>
         <button type="submit" className="btn btnPrimary" disabled={busy} data-testid="add-size-submit">
           Add size
         </button>
@@ -403,10 +435,12 @@ function SizeRow({ productId, size, onError, onHistory }: { productId: string; s
 
   return (
     <tr data-testid={`size-row-${size.id}`}>
-      <td data-label="Size">{size.displayLabel}</td>
-      <td className={styles.numeric} data-label="Price">
+      <td className={adminStyles.tableTd} data-label="Size">
+        {size.displayLabel}
+      </td>
+      <td className={`${adminStyles.tableTd} ${adminStyles.numeric}`} data-label="Price">
         <input
-          className={`${styles.input} ${styles.priceInput}`}
+          className={adminStyles.priceInput}
           type="number"
           min="0"
           step="1"
@@ -422,16 +456,16 @@ function SizeRow({ productId, size, onError, onHistory }: { productId: string; s
           </button>
         )}
       </td>
-      <td className={styles.numeric} data-label="Glass surcharge">
+      <td className={`${adminStyles.tableTd} ${adminStyles.numeric}`} data-label="Glass surcharge">
         {formatMoney(size.glassSurchargeMinor)}
       </td>
-      <td className={styles.numeric} data-label="Mat surcharge">
+      <td className={`${adminStyles.tableTd} ${adminStyles.numeric}`} data-label="Mat surcharge">
         {formatMoney(size.matSurchargeMinor)}
       </td>
-      <td data-label="Status">
-        <span className={`${styles.badge} ${size.active ? styles.badgeActive : styles.badgeInactive}`}>{size.active ? 'Active' : 'Inactive'}</span>
+      <td className={adminStyles.tableTd} data-label="Status">
+        <span className={adminStyles.badge(size.active ? 'active' : 'inactive')}>{size.active ? 'Active' : 'Inactive'}</span>
       </td>
-      <td data-label="">
+      <td className={adminStyles.tableTd} data-label="">
         <button type="button" className="btnText" onClick={toggleActive} disabled={saving} data-testid={`toggle-size-${size.id}`}>
           {size.active ? 'Deactivate' : 'Activate'}
         </button>

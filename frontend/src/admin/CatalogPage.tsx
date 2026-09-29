@@ -3,7 +3,7 @@ import { formatMoney } from '../../../shared/money'
 import { adminApi, isAdminApiError } from './adminApi'
 import { useAdminCatalog } from './catalogStore'
 import { Link } from './Link'
-import styles from './admin.module.css'
+import * as adminStyles from './adminStyles'
 import type { AdminProductView } from '../../../shared/admin'
 
 type SortKey = 'name' | 'updated' | 'price'
@@ -68,14 +68,14 @@ export function CatalogPage() {
   }
 
   if (loading && !catalog) return <p role="status">Loading catalog…</p>
-  if (error) return <p className={`${styles.banner} ${styles.bannerError}`}>{error}</p>
+  if (error) return <p className={adminStyles.banner('error')}>{error}</p>
   if (!catalog) return null
 
   return (
-    <div className={styles.page} data-testid="catalog-page">
-      <div className={styles.pageHeader}>
-        <h1 className={styles.pageTitle}>Catalog</h1>
-        <div className={styles.pageActions}>
+    <div className={adminStyles.page} data-testid="catalog-page">
+      <div className={adminStyles.pageHeader}>
+        <h1 className={adminStyles.pageTitle}>Catalog</h1>
+        <div className={adminStyles.pageActions}>
           <Link to="/admin/catalog/bulk" className="btn btnSecondary">
             Bulk pricing
           </Link>
@@ -85,16 +85,16 @@ export function CatalogPage() {
         </div>
       </div>
 
-      {toggleError && <p className={`${styles.banner} ${styles.bannerError}`}>{toggleError}</p>}
+      {toggleError && <p className={adminStyles.banner('error')}>{toggleError}</p>}
 
-      <div className={styles.toolbar}>
-        <input className={`${styles.input} ${styles.searchInput}`} placeholder="Search products…" value={query} onChange={(e) => setQuery(e.target.value)} data-testid="catalog-search" aria-label="Search products" />
-        <select className={styles.select} value={filter} onChange={(e) => setFilter(e.target.value as typeof filter)} aria-label="Filter by status">
+      <div className={adminStyles.toolbar}>
+        <input className={adminStyles.searchInput} placeholder="Search products…" value={query} onChange={(e) => setQuery(e.target.value)} data-testid="catalog-search" aria-label="Search products" />
+        <select className={adminStyles.inputBase} value={filter} onChange={(e) => setFilter(e.target.value as typeof filter)} aria-label="Filter by status">
           <option value="all">All</option>
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
         </select>
-        <select className={styles.select} value={sort} onChange={(e) => setSort(e.target.value as SortKey)} aria-label="Sort by">
+        <select className={adminStyles.inputBase} value={sort} onChange={(e) => setSort(e.target.value as SortKey)} aria-label="Sort by">
           <option value="name">Sort: name</option>
           <option value="updated">Sort: last updated</option>
           <option value="price">Sort: price</option>
@@ -102,38 +102,42 @@ export function CatalogPage() {
       </div>
 
       {products.length === 0 ? (
-        <p className={styles.emptyState}>No products match.</p>
+        <p className={adminStyles.emptyState}>No products match.</p>
       ) : (
-        <table className={styles.table}>
+        <table className={adminStyles.table}>
           <thead>
             <tr>
-              <th>Product</th>
-              <th>Style</th>
-              <th>Status</th>
-              <th className={styles.numeric}>Sizes</th>
-              <th className={styles.numeric}>Price range</th>
-              <th>Updated</th>
-              <th />
+              <th className={adminStyles.tableTh}>Product</th>
+              <th className={adminStyles.tableTh}>Style</th>
+              <th className={adminStyles.tableTh}>Status</th>
+              <th className={`${adminStyles.tableTh} ${adminStyles.numeric}`}>Sizes</th>
+              <th className={`${adminStyles.tableTh} ${adminStyles.numeric}`}>Price range</th>
+              <th className={adminStyles.tableTh}>Updated</th>
+              <th className={adminStyles.tableTh} />
             </tr>
           </thead>
           <tbody>
             {products.map((product) => (
               <tr key={product.id} data-testid={`product-row-${product.id}`}>
-                <td data-label="Product">
+                <td className={adminStyles.tableTd} data-label="Product">
                   <Link to={`/admin/products/${product.id}`}>{product.name}</Link>
                 </td>
-                <td data-label="Style">{product.styleId}</td>
-                <td data-label="Status">
-                  <span className={`${styles.badge} ${product.active ? styles.badgeActive : styles.badgeInactive}`}>{product.active ? 'Active' : 'Inactive'}</span>
+                <td className={adminStyles.tableTd} data-label="Style">
+                  {product.styleId}
                 </td>
-                <td className={styles.numeric} data-label="Sizes">
+                <td className={adminStyles.tableTd} data-label="Status">
+                  <span className={adminStyles.badge(product.active ? 'active' : 'inactive')}>{product.active ? 'Active' : 'Inactive'}</span>
+                </td>
+                <td className={`${adminStyles.tableTd} ${adminStyles.numeric}`} data-label="Sizes">
                   {product.sizes.length}
                 </td>
-                <td className={styles.numeric} data-label="Price range">
+                <td className={`${adminStyles.tableTd} ${adminStyles.numeric}`} data-label="Price range">
                   {priceRange(product)}
                 </td>
-                <td data-label="Updated">{new Date(product.updatedAt).toLocaleDateString()}</td>
-                <td data-label="">
+                <td className={adminStyles.tableTd} data-label="Updated">
+                  {new Date(product.updatedAt).toLocaleDateString()}
+                </td>
+                <td className={adminStyles.tableTd} data-label="">
                   <button type="button" className="btnText" disabled={toggling === product.id} onClick={() => void toggleActive(product)} data-testid={`toggle-${product.id}`}>
                     {product.active ? 'Deactivate' : 'Activate'}
                   </button>

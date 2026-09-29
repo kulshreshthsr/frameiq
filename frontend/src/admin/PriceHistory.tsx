@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { formatMoney } from '../../../shared/money'
 import type { AdminCatalog, CatalogAuditEntry } from '../../../shared/admin'
 import { adminApi, isAdminApiError } from './adminApi'
-import styles from './admin.module.css'
+import * as adminStyles from './adminStyles'
 
 /** A size's price history, with a way to restore an earlier value. Reverting
  * writes a brand new entry (see server/catalog/adminCatalogRepo.ts) — this
@@ -50,22 +50,22 @@ export function PriceHistory({
   }
 
   return (
-    <div className={styles.panel} role="dialog" aria-label={`Price history for ${sizeId}`} data-testid="price-history">
-      <div className={styles.pageHeader} style={{ marginBottom: 10 }}>
-        <h3 className={styles.panelTitle}>Price history — {sizeId}</h3>
+    <div className={adminStyles.panel} role="dialog" aria-label={`Price history for ${sizeId}`} data-testid="price-history">
+      <div className={`${adminStyles.pageHeader} mb-2.5`}>
+        <h3 className={adminStyles.panelTitle}>Price history — {sizeId}</h3>
         <button type="button" className="btnText" onClick={onClose} data-testid="close-history">
           Close
         </button>
       </div>
-      {error && <p className={`${styles.banner} ${styles.bannerError}`}>{error}</p>}
+      {error && <p className={adminStyles.banner('error')}>{error}</p>}
       {!entries ? (
         <p role="status">Loading…</p>
       ) : entries.length === 0 ? (
-        <p className={styles.hint}>No price changes recorded yet.</p>
+        <p className={adminStyles.hint}>No price changes recorded yet.</p>
       ) : (
-        <div className={styles.historyList}>
+        <div className={adminStyles.historyList}>
           {entries.map((entry) => (
-            <div key={entry.id} className={styles.historyRow} data-testid={`history-entry-${entry.id}`}>
+            <div key={entry.id} className={adminStyles.historyRow} data-testid={`history-entry-${entry.id}`}>
               <span>
                 {entry.oldPriceMinor !== null && entry.newPriceMinor !== null ? (
                   <>
@@ -74,7 +74,7 @@ export function PriceHistory({
                 ) : (
                   `${entry.field} changed`
                 )}
-                <span className={styles.historyMeta}>
+                <span className={adminStyles.historyMeta}>
                   {' · '}
                   {entry.actorName} · {new Date(entry.createdAt).toLocaleString()}
                   {entry.note ? ` · ${entry.note}` : ''}

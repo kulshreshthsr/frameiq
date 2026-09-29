@@ -9,7 +9,7 @@ import { OrderDetailPage } from './OrderDetailPage'
 import { OrdersPage } from './OrdersPage'
 import { ProductPage } from './ProductPage'
 import { navigate, useAdminRoute } from './router'
-import styles from './admin.module.css'
+import * as adminStyles from './adminStyles'
 
 /**
  * The owner admin area — a completely separate small app from the customer
@@ -29,7 +29,7 @@ export default function AdminApp() {
 
   if (status === 'checking') {
     return (
-      <div className={styles.loadingScreen} role="status">
+      <div className={adminStyles.loadingScreen} role="status">
         Loading admin…
       </div>
     )
@@ -51,7 +51,7 @@ export default function AdminApp() {
       {route.name === 'product' && <ProductPage id={route.id} />}
       {route.name === 'orders' && <OrdersPage />}
       {route.name === 'order' && <OrderDetailPage id={route.id} />}
-      {route.name === 'notFound' && <p className={styles.emptyState}>Nothing here. {route.path}</p>}
+      {route.name === 'notFound' && <p className={adminStyles.emptyState}>Nothing here. {route.path}</p>}
     </AdminShell>
   )
 }

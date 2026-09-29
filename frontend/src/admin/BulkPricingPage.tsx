@@ -4,7 +4,7 @@ import { MAX_PRICE_MINOR } from '../../../shared/limits'
 import { adminApi, isAdminApiError } from './adminApi'
 import { useAdminCatalog } from './catalogStore'
 import { Link } from './Link'
-import styles from './admin.module.css'
+import * as adminStyles from './adminStyles'
 
 interface Row {
   productId: string
@@ -132,43 +132,53 @@ export function BulkPricingPage() {
   if (!catalog) return null
 
   return (
-    <div className={styles.page} data-testid="bulk-pricing-page">
-      <div className={styles.pageHeader}>
+    <div className={adminStyles.page} data-testid="bulk-pricing-page">
+      <div className={adminStyles.pageHeader}>
         <div>
-          <Link to="/admin/catalog" className={styles.crumb}>
+          <Link to="/admin/catalog" className={adminStyles.crumb}>
             ‹ Catalog
           </Link>
-          <h1 className={styles.pageTitle}>Bulk pricing</h1>
+          <h1 className={adminStyles.pageTitle}>Bulk pricing</h1>
         </div>
       </div>
 
-      {error && <p className={`${styles.banner} ${styles.bannerError}`}>{error}</p>}
-      {notice && <p className={`${styles.banner} ${styles.bannerSuccess}`}>{notice}</p>}
+      {error && <p className={adminStyles.banner('error')}>{error}</p>}
+      {notice && <p className={adminStyles.banner('success')}>{notice}</p>}
 
-      <div className={styles.panel}>
-        <h2 className={styles.panelTitle}>Adjust selected prices</h2>
-        <p className={styles.hint}>Tick rows below, choose an adjustment, and preview it before anything is saved.</p>
-        <div className={styles.toolbar}>
-          <select className={styles.select} value={mode} onChange={(e) => setMode(e.target.value as typeof mode)} aria-label="Adjustment type">
+      <div className={adminStyles.panel}>
+        <h2 className={adminStyles.panelTitle}>Adjust selected prices</h2>
+        <p className={adminStyles.hint}>Tick rows below, choose an adjustment, and preview it before anything is saved.</p>
+        <div className={adminStyles.toolbar}>
+          <select className={adminStyles.inputBase} value={mode} onChange={(e) => setMode(e.target.value as typeof mode)} aria-label="Adjustment type">
             <option value="percent">Percent</option>
             <option value="fixed">Fixed amount (₹)</option>
           </select>
-          <select className={styles.select} value={sign} onChange={(e) => setSign(Number(e.target.value) as 1 | -1)} aria-label="Increase or decrease">
+          <select className={adminStyles.inputBase} value={sign} onChange={(e) => setSign(Number(e.target.value) as 1 | -1)} aria-label="Increase or decrease">
             <option value={1}>Increase by</option>
             <option value={-1}>Decrease by</option>
           </select>
-          <input className={styles.input} style={{ width: 100 }} type="number" min="0" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder={mode === 'percent' ? '5' : '50'} data-testid="adjustment-amount" aria-label="Amount" />
-          <span className={styles.hint}>{mode === 'percent' ? '%' : '₹'}</span>
+          <input
+            className={`${adminStyles.inputBase} w-[100px]`}
+            type="number"
+            min="0"
+            step="0.01"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder={mode === 'percent' ? '5' : '50'}
+            data-testid="adjustment-amount"
+            aria-label="Amount"
+          />
+          <span className={adminStyles.hint}>{mode === 'percent' ? '%' : '₹'}</span>
           <button type="button" className="btn btnSecondary" onClick={applyAdjustmentPreview} disabled={selected.size === 0} data-testid="preview-adjustment">
             Preview on {selected.size} selected
           </button>
         </div>
       </div>
 
-      <div className={styles.toolbar}>
-        <input className={`${styles.input} ${styles.searchInput}`} placeholder="Search…" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search" />
-        <label className={styles.checkboxRow}>
-          <input type="checkbox" checked={activeOnly} onChange={(e) => setActiveOnly(e.target.checked)} />
+      <div className={adminStyles.toolbar}>
+        <input className={adminStyles.searchInput} placeholder="Search…" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search" />
+        <label className={adminStyles.checkboxRow}>
+          <input type="checkbox" className={adminStyles.checkboxInput} checked={activeOnly} onChange={(e) => setActiveOnly(e.target.checked)} />
           Active only
         </label>
         <button type="button" className="btnText" onClick={selectAllVisible}>
@@ -179,14 +189,14 @@ export function BulkPricingPage() {
         </button>
       </div>
 
-      <table className={styles.table}>
+      <table className={adminStyles.table}>
         <thead>
           <tr>
-            <th />
-            <th>Product</th>
-            <th>Size</th>
-            <th className={styles.numeric}>Current</th>
-            <th className={styles.numeric}>New price</th>
+            <th className={adminStyles.tableTh} />
+            <th className={adminStyles.tableTh}>Product</th>
+            <th className={adminStyles.tableTh}>Size</th>
+            <th className={`${adminStyles.tableTh} ${adminStyles.numeric}`}>Current</th>
+            <th className={`${adminStyles.tableTh} ${adminStyles.numeric}`}>New price</th>
           </tr>
         </thead>
         <tbody>
@@ -195,18 +205,22 @@ export function BulkPricingPage() {
             const draft = drafts[k] ?? ''
             const isChanged = draftMinor(row) !== row.priceMinor
             return (
-              <tr key={k} data-testid={`bulk-row-${row.productId}-${row.sizeId}`} style={isChanged ? { background: 'var(--accent-soft)' } : undefined}>
-                <td data-label="">
+              <tr key={k} data-testid={`bulk-row-${row.productId}-${row.sizeId}`} className={isChanged ? 'bg-accent-soft' : undefined}>
+                <td className={adminStyles.tableTd} data-label="">
                   <input type="checkbox" checked={selected.has(k)} onChange={() => toggleSelected(k)} aria-label={`Select ${row.productName} ${row.sizeLabel}`} />
                 </td>
-                <td data-label="Product">{row.productName}</td>
-                <td data-label="Size">{row.sizeLabel}</td>
-                <td className={styles.numeric} data-label="Current">
+                <td className={adminStyles.tableTd} data-label="Product">
+                  {row.productName}
+                </td>
+                <td className={adminStyles.tableTd} data-label="Size">
+                  {row.sizeLabel}
+                </td>
+                <td className={`${adminStyles.tableTd} ${adminStyles.numeric}`} data-label="Current">
                   {formatMoney(row.priceMinor)}
                 </td>
-                <td className={styles.numeric} data-label="New price">
+                <td className={`${adminStyles.tableTd} ${adminStyles.numeric}`} data-label="New price">
                   <input
-                    className={`${styles.input} ${styles.priceInput}`}
+                    className={adminStyles.priceInput}
                     type="number"
                     min="0"
                     step="1"
@@ -223,10 +237,12 @@ export function BulkPricingPage() {
         </tbody>
       </table>
 
-      <div className={styles.panel}>
-        <div className={styles.pageHeader} style={{ marginBottom: reviewing ? 12 : 0 }}>
-          <h2 className={styles.panelTitle}>{changed.length} price{changed.length === 1 ? '' : 's'} changed</h2>
-          <div className={styles.pageActions}>
+      <div className={adminStyles.panel}>
+        <div className={`${adminStyles.pageHeader} ${reviewing ? 'mb-3' : 'mb-0'}`}>
+          <h2 className={adminStyles.panelTitle}>
+            {changed.length} price{changed.length === 1 ? '' : 's'} changed
+          </h2>
+          <div className={adminStyles.pageActions}>
             {changed.length > 0 && !reviewing && (
               <button type="button" className="btn btnSecondary" onClick={() => setReviewing(true)} data-testid="review-changes">
                 Review changes
@@ -240,24 +256,28 @@ export function BulkPricingPage() {
           </div>
         </div>
         {reviewing && (
-          <table className={styles.table} data-testid="review-table">
+          <table className={adminStyles.table} data-testid="review-table">
             <thead>
               <tr>
-                <th>Product</th>
-                <th>Size</th>
-                <th className={styles.numeric}>Current</th>
-                <th className={styles.numeric}>New</th>
+                <th className={adminStyles.tableTh}>Product</th>
+                <th className={adminStyles.tableTh}>Size</th>
+                <th className={`${adminStyles.tableTh} ${adminStyles.numeric}`}>Current</th>
+                <th className={`${adminStyles.tableTh} ${adminStyles.numeric}`}>New</th>
               </tr>
             </thead>
             <tbody>
               {changed.map((row) => (
                 <tr key={key(row)}>
-                  <td data-label="Product">{row.productName}</td>
-                  <td data-label="Size">{row.sizeLabel}</td>
-                  <td className={styles.numeric} data-label="Current">
+                  <td className={adminStyles.tableTd} data-label="Product">
+                    {row.productName}
+                  </td>
+                  <td className={adminStyles.tableTd} data-label="Size">
+                    {row.sizeLabel}
+                  </td>
+                  <td className={`${adminStyles.tableTd} ${adminStyles.numeric}`} data-label="Current">
                     {formatMoney(row.priceMinor)}
                   </td>
-                  <td className={styles.numeric} data-label="New">
+                  <td className={`${adminStyles.tableTd} ${adminStyles.numeric}`} data-label="New">
                     {formatMoney(draftMinor(row))}
                   </td>
                 </tr>
