@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 import { readFileSync } from 'node:fs'
 
 const appVersion = (JSON.parse(readFileSync('./package.json', 'utf8')) as { version: string }).version
@@ -10,7 +11,7 @@ const appVersion = (JSON.parse(readFileSync('./package.json', 'utf8')) as { vers
 // this app, `shared/` and the backend in one run, so it can't live inside
 // just the frontend's own build config.
 export default defineConfig({
-  plugins: [react()],
+  plugins: [tailwindcss(), react()],
   // Recorded in every order snapshot, so a problem can be traced to the build that made it.
   define: { __APP_VERSION__: JSON.stringify(appVersion) },
   server: {

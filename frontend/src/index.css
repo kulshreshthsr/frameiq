@@ -1,295 +1,244 @@
 /*
- * Design tokens and shared primitives — the DECORYL brand system.
+ * Tailwind CSS entry point — the DECORYL brand system, as theme tokens.
  *
- * Direction: deep navy and warm gold (from the DECORYL mark) as real
- * structural brand colors, not decoration — ink, buttons and focus states
- * are navy; gold is reserved for selective highlights. Two gold tones exist
- * on purpose: --accent is darkened for AA text contrast on light paper,
- * --gold-bright is the louder, more luminous tone used only on dark navy
- * surfaces where it doesn't need to carry body-text contrast. Flat surfaces
- * and hairline borders; depth comes from a soft shadow, never gradients.
+ * Direction unchanged from the pre-Tailwind system: deep navy and warm gold
+ * (from the DECORYL mark) as real structural brand colors — ink, buttons and
+ * focus states are navy; gold is reserved for selective highlights. Two gold
+ * tones exist on purpose: --color-accent is darkened for AA text contrast on
+ * light paper, --color-gold-bright is the louder tone used only on dark navy
+ * surfaces where it doesn't need to carry body-text contrast.
+ *
+ * Every value below is copied unchanged from the CSS-variable system this
+ * replaces — this migration is architectural (CSS Modules → Tailwind
+ * utilities), not a redesign, so nothing here should shift a color, a font
+ * or a spacing value from what it was.
  */
-:root {
-  --paper: #f7f4ee;
-  --paper-2: #ede6d7;
-  --card: #fffdf9;
-  --ink: #17273d;
-  --ink-2: #3d5066;
-  --ink-3: #69788b;
-  --line: #ddd5c3;
-  --line-strong: #c1b6a0;
-  --accent: #8a6d2a;
-  --accent-soft: #f1e4c4;
-  --gold-bright: #c89b4a;
-  --ok: #3f6b4a;
-  --danger: #a3362b;
-  --danger-soft: #f7e6e3;
+@import 'tailwindcss';
 
-  /* Dark, "immersive" section surfaces — alternated against --paper for
-     visual rhythm; not used for body text on light backgrounds. */
-  --surface-dark: #15243a;
-  --surface-dark-2: #1e3350;
-  --on-dark: #f5f1e7;
-  --on-dark-2: #b9c2ce;
-  --on-dark-line: rgba(245, 241, 231, 0.14);
+@theme {
+  --color-paper: #f7f4ee;
+  --color-paper-2: #ede6d7;
+  --color-card: #fffdf9;
+  --color-ink: #17273d;
+  --color-ink-2: #3d5066;
+  --color-ink-3: #69788b;
+  --color-line: #ddd5c3;
+  --color-line-strong: #c1b6a0;
+  --color-accent: #8a6d2a;
+  --color-accent-soft: #f1e4c4;
+  --color-gold-bright: #c89b4a;
+  --color-ok: #3f6b4a;
+  --color-danger: #a3362b;
+  --color-danger-soft: #f7e6e3;
 
-  /* Fraunces (loaded in index.html) first, so every existing heading that
-     already uses --font-serif picks up the new display face for free; the
-     old system-serif stack stays as the fallback while the webfont loads
-     (or if it fails to). */
+  /* Dark, "immersive" section surfaces — alternated against --color-paper
+     for visual rhythm; not used for body text on light backgrounds. */
+  --color-surface-dark: #15243a;
+  --color-surface-dark-2: #1e3350;
+  --color-on-dark: #f5f1e7;
+  --color-on-dark-2: #b9c2ce;
+  --color-on-dark-line: rgba(245, 241, 231, 0.14);
+
+  /* Fraunces (loaded in index.html) first, so every heading that uses the
+     `font-serif` utility picks up the display face; the system-serif stack
+     stays as the fallback while the webfont loads (or if it fails to).
+     Overriding Tailwind's default --font-sans/--font-serif here means the
+     existing `font-sans`/`font-serif` utilities already carry this app's
+     stacks — no custom utility names needed. */
   --font-serif: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Palatino, 'URW Palladio L', P052, 'Book Antiqua', Georgia, serif;
   --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
 
-  --radius: 10px;
-  --radius-sm: 6px;
+  /* The one card/panel radius (10px) that doesn't land on Tailwind's default
+     scale (8px `lg` / 12px `xl`) but repeats constantly — promoted to a
+     named token rather than an arbitrary value at 17 call sites. Every
+     other radius in the app (4, 6, 8, 12, 16px, pill) already matches a
+     Tailwind default (sm/md/lg/xl/2xl/full) and needs no override. */
+  --radius-card: 10px;
+
   --shadow-soft: 0 1px 2px rgba(33, 28, 23, 0.06), 0 6px 18px rgba(33, 28, 23, 0.08);
   --shadow-lift: 0 10px 30px rgba(33, 28, 23, 0.16);
 
+  /* The bottom safe-area inset, as a spacing-scale entry so it composes with
+     padding, margin and gap utilities (`pb-safe`, `mb-safe`, ...) like any
+     other spacing value, instead of a one-off CSS variable. */
+  --spacing-safe: env(safe-area-inset-bottom, 0px);
+
+  /* The two loading spinners in the app spin faster than Tailwind's default
+     `animate-spin` (1s) — reusing Tailwind's built-in `spin` keyframe at the
+     app's original 0.8s duration rather than redeclaring the keyframe. */
+  --animate-spin-fast: spin 0.8s linear infinite;
+}
+
+/*
+ * TEMPORARY — migration compatibility shim, remove once every *.module.css
+ * file is gone. `@theme` above only emits the new `--color-*`/`--radius-*`
+ * names; every CSS Module file not yet migrated to Tailwind utilities still
+ * reads the old bare names (`var(--ink)`, `var(--card)`, ...), and so does a
+ * couple of `var(--x)` references inline in .tsx (LayoutDiagram's SVG fills,
+ * a background in BulkPricingPage). Aliasing old → new here means the app
+ * stays fully working at every point during the migration, file by file,
+ * instead of needing one all-or-nothing cutover.
+ */
+:root {
+  --paper: var(--color-paper);
+  --paper-2: var(--color-paper-2);
+  --card: var(--color-card);
+  --ink: var(--color-ink);
+  --ink-2: var(--color-ink-2);
+  --ink-3: var(--color-ink-3);
+  --line: var(--color-line);
+  --line-strong: var(--color-line-strong);
+  --accent: var(--color-accent);
+  --accent-soft: var(--color-accent-soft);
+  --gold-bright: var(--color-gold-bright);
+  --ok: var(--color-ok);
+  --danger: var(--color-danger);
+  --danger-soft: var(--color-danger-soft);
+  --surface-dark: var(--color-surface-dark);
+  --surface-dark-2: var(--color-surface-dark-2);
+  --on-dark: var(--color-on-dark);
+  --on-dark-2: var(--color-on-dark-2);
+  --on-dark-line: var(--color-on-dark-line);
+  --radius: var(--radius-card);
+  --radius-sm: var(--radius-md);
   --touch: 48px;
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-
-  font: 15px/1.5 var(--font-sans);
-  color-scheme: light;
-  color: var(--ink);
-  background: var(--paper);
-  -webkit-text-size-adjust: 100%;
-  -webkit-tap-highlight-color: transparent;
+  --safe-bottom: var(--spacing-safe);
 }
 
-* {
-  box-sizing: border-box;
+/*
+ * Everything below is global CSS that Tailwind's utility system has no
+ * equivalent for: bare pseudo-selectors applying to every element (not a
+ * class), and the couple of page-shell rules that read more clearly here
+ * than as a wall of utility classes on <html>/<body> in index.html. This is
+ * deliberately small — see index.html for the rest of the page shell
+ * (w-full h-full, bg-paper, etc., set directly as classes there).
+ */
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  /* Keyboard focus is always visible; mouse/touch focus is not distracting. */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
 }
 
-html,
-body,
-#root {
-  margin: 0;
-  width: 100%;
-  height: 100%;
-}
+/*
+ * Reusable classes used as plain className strings across 15-27 files each
+ * (buttons alone: 27). Rebuilding every call site as a <Button> component
+ * would turn a styling migration into a much larger, riskier component
+ * refactor touching checkout/admin/journey business logic — out of scope
+ * here. These stay as named classes, genuinely built from Tailwind
+ * utilities via @apply, so every existing `className="btn btnPrimary"` etc.
+ * keeps working unchanged.
+ */
+@layer components {
+  .btn {
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border border-transparent px-[22px] text-center text-[15px] leading-[1.2] font-semibold tracking-[0.01em] no-underline transition-[background-color,border-color,opacity] duration-150 ease-in-out select-none;
+  }
 
-body {
-  overflow: hidden;
-  background: var(--paper);
-  overscroll-behavior: none;
-}
+  .btn:disabled {
+    @apply cursor-not-allowed opacity-45;
+  }
 
-h1,
-h2,
-h3,
-p {
-  margin: 0;
-}
+  .btnPrimary {
+    @apply bg-ink text-paper;
+  }
 
-button,
-input,
-select {
-  font: inherit;
-  color: inherit;
-}
+  .btnPrimary:hover:not(:disabled) {
+    background: #233a56;
+  }
 
-button {
-  cursor: pointer;
-}
+  .btnSecondary {
+    @apply border-line-strong bg-transparent text-ink;
+  }
 
-/* Keyboard focus is always visible; mouse/touch focus is not distracting. */
-:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
+  .btnSecondary:hover:not(:disabled) {
+    @apply bg-paper-2;
+  }
 
-:focus:not(:focus-visible) {
-  outline: none;
-}
+  .btnBlock {
+    @apply w-full;
+  }
 
-.srOnly {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
+  .btnCompact {
+    @apply min-h-10 px-4 text-sm;
+  }
 
-/* ------------------------------------------------------------------ buttons */
+  .btnText {
+    @apply inline-flex min-h-10 items-center gap-1 border-none bg-none px-1 text-sm font-semibold text-accent underline decoration-1 underline-offset-[3px];
+  }
 
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: var(--touch);
-  padding: 0 22px;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  font-size: 15px;
-  font-weight: 600;
-  text-decoration: none;
-  letter-spacing: 0.01em;
-  line-height: 1.2;
-  text-align: center;
-  transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
-  -webkit-user-select: none;
-  user-select: none;
-}
+  .btnText:hover:not(:disabled) {
+    @apply decoration-2;
+  }
 
-.btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
+  .btnText:disabled {
+    @apply cursor-not-allowed opacity-50;
+  }
 
-.btnPrimary {
-  background: var(--ink);
-  color: var(--paper);
-}
+  /* ---------------------------------------------------------- segmented */
 
-.btnPrimary:hover:not(:disabled) {
-  background: #233a56;
-}
+  .segmented {
+    @apply border-line-strong bg-card inline-flex gap-0.5 rounded-card border p-[3px];
+  }
 
-.btnSecondary {
-  background: transparent;
-  color: var(--ink);
-  border-color: var(--line-strong);
-}
+  .segmentedBlock {
+    @apply flex w-full;
+  }
 
-.btnSecondary:hover:not(:disabled) {
-  background: var(--paper-2);
-}
+  .segmentedBlock > .segment {
+    @apply flex-1;
+  }
 
-.btnBlock {
-  width: 100%;
-}
+  .segment {
+    @apply text-ink-2 min-h-[42px] rounded-[7px] border-none bg-transparent px-4 text-sm font-semibold transition-[background-color,color] duration-150 ease-in-out;
+  }
 
-.btnCompact {
-  min-height: 40px;
-  padding: 0 16px;
-  font-size: 14px;
-}
+  .segment:hover {
+    @apply bg-paper-2;
+  }
 
-.btnText {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  min-height: 40px;
-  padding: 0 4px;
-  background: none;
-  border: none;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--accent);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  text-decoration-thickness: 1px;
-}
+  .segmentActive,
+  .segmentActive:hover {
+    @apply bg-ink text-paper;
+  }
 
-.btnText:hover:not(:disabled) {
-  text-decoration-thickness: 2px;
-}
+  /* ---------------------------------------------------------------- text */
 
-.btnText:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+  .eyebrow {
+    @apply text-ink-3 text-xs font-bold tracking-[0.08em] uppercase;
+  }
 
-/* ------------------------------------------------------------------ segmented */
+  .hint {
+    @apply text-ink-2 text-sm leading-normal;
+  }
 
-.segmented {
-  display: inline-flex;
-  padding: 3px;
-  gap: 2px;
-  border: 1px solid var(--line-strong);
-  border-radius: 10px;
-  background: var(--card);
-}
+  .fieldError {
+    @apply text-danger mt-2 flex items-start gap-1.5 text-[13px] leading-snug;
+  }
 
-.segmentedBlock {
-  display: flex;
-  width: 100%;
-}
+  /* A horizontally scrolling row that feels native on touch and hides its
+   * scrollbar; used for layout and frame pickers on narrow screens. */
+  .scroller {
+    @apply -mx-4 flex snap-x snap-proximity gap-2.5 overflow-x-auto px-4 py-0.5 pb-1.5 [-webkit-overflow-scrolling:touch] [scrollbar-width:none];
+  }
 
-.segmentedBlock > .segment {
-  flex: 1;
-}
+  .scroller::-webkit-scrollbar {
+    display: none;
+  }
 
-.segment {
-  min-height: 42px;
-  padding: 0 16px;
-  border: none;
-  border-radius: 7px;
-  background: transparent;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--ink-2);
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-.segment:hover {
-  background: var(--paper-2);
-}
-
-.segmentActive,
-.segmentActive:hover {
-  background: var(--ink);
-  color: var(--paper);
-}
-
-/* ------------------------------------------------------------------ text */
-
-.eyebrow {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-}
-
-.hint {
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--ink-2);
-}
-
-.fieldError {
-  display: flex;
-  gap: 6px;
-  align-items: flex-start;
-  margin-top: 8px;
-  font-size: 13px;
-  line-height: 1.4;
-  color: var(--danger);
-}
-
-/* A horizontally scrolling row that feels native on touch and hides its
- * scrollbar; used for layout and frame pickers on narrow screens. */
-.scroller {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  scroll-snap-type: x proximity;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-  padding: 2px 16px 6px;
-  margin: 0 -16px;
-}
-
-.scroller::-webkit-scrollbar {
-  display: none;
-}
-
-.scroller > * {
-  flex: 0 0 auto;
-  scroll-snap-align: start;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
+  .scroller > * {
+    @apply flex-none snap-start;
   }
 }
