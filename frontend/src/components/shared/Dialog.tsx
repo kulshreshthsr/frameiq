@@ -1,5 +1,4 @@
 import { useEffect, useRef, type ReactNode } from 'react'
-import styles from './shared.module.css'
 
 interface DialogProps {
   open: boolean
@@ -28,7 +27,7 @@ export function Dialog({ open, title, onClose, children, className }: DialogProp
   return (
     <dialog
       ref={ref}
-      className={`${styles.dialog} ${className ?? ''}`}
+      className={`bg-card shadow-lift w-full max-w-[min(440px,calc(100vw-24px))] rounded-[14px] border-none p-0 text-ink backdrop:bg-[rgba(33,28,23,0.5)] ${className ?? ''}`}
       aria-label={title}
       onClose={onClose}
       onClick={(e) => {
@@ -36,7 +35,7 @@ export function Dialog({ open, title, onClose, children, className }: DialogProp
         if (e.target === ref.current) onClose()
       }}
     >
-      {open && <div className={styles.dialogBody}>{children}</div>}
+      {open && <div className="p-6">{children}</div>}
     </dialog>
   )
 }
