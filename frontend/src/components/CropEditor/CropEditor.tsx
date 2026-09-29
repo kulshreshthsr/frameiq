@@ -10,7 +10,6 @@ import { frameName } from '../../lib/frameLabels'
 import type { FrameInstance } from '../../types/frame'
 import { FrameContent } from '../CanvasStage/FrameContent'
 import { Dialog } from '../shared/Dialog'
-import styles from './CropEditor.module.css'
 
 const MAX_STAGE_HEIGHT_RATIO = 0.42
 const KEY_STEP = 12
@@ -89,12 +88,12 @@ function Editor({ frame, index }: { frame: FrameInstance; index: number }) {
   }
 
   return (
-    <div className={styles.editor}>
-      <h2 className={styles.title}>Adjust {frameName(index)}</h2>
-      <p className={styles.hint}>Drag to reposition. Pinch or use the slider to zoom.</p>
+    <div className="flex flex-col gap-3.5">
+      <h2 className="font-serif text-2xl font-medium tracking-[-0.01em]">Adjust {frameName(index)}</h2>
+      <p className="-mt-2 text-sm text-ink-2">Drag to reposition. Pinch or use the slider to zoom.</p>
 
       <div
-        className={styles.stageWrap}
+        className="rounded-card self-center bg-paper-2 p-3 leading-none"
         tabIndex={0}
         role="group"
         aria-label="Photo position. Use the arrow keys to move the photo, and plus and minus to zoom."
@@ -105,7 +104,7 @@ function Editor({ frame, index }: { frame: FrameInstance; index: number }) {
           height={frame.height * scale}
           scaleX={scale}
           scaleY={scale}
-          className={styles.stage}
+          className="touch-none"
           onTouchMove={handleTouchMove}
           onTouchEnd={() => {
             pinch.current = null
@@ -117,7 +116,7 @@ function Editor({ frame, index }: { frame: FrameInstance; index: number }) {
         </Stage>
       </div>
 
-      <label className={styles.zoom}>
+      <label className="flex items-center gap-3 text-[13px] font-semibold text-ink-2">
         <span>Zoom</span>
         <input
           type="range"
@@ -127,17 +126,18 @@ function Editor({ frame, index }: { frame: FrameInstance; index: number }) {
           value={t.scale}
           onChange={(e) => updateFramePhotoTransform(frame.id, { scale: Number(e.target.value) })}
           aria-label="Zoom"
+          className="min-h-11 flex-1 accent-ink"
         />
       </label>
 
-      <div className={styles.actions}>
-        <button type="button" className="btn btnSecondary btnCompact" onClick={() => rotatePhoto90(frame.id, -1)}>
+      <div className="grid grid-cols-3 gap-2">
+        <button type="button" className="btn btnSecondary btnCompact px-1.5 whitespace-nowrap" onClick={() => rotatePhoto90(frame.id, -1)}>
           Rotate left
         </button>
-        <button type="button" className="btn btnSecondary btnCompact" onClick={() => rotatePhoto90(frame.id, 1)}>
+        <button type="button" className="btn btnSecondary btnCompact px-1.5 whitespace-nowrap" onClick={() => rotatePhoto90(frame.id, 1)}>
           Rotate right
         </button>
-        <button type="button" className="btn btnSecondary btnCompact" onClick={() => autoFitPhoto(frame.id)}>
+        <button type="button" className="btn btnSecondary btnCompact px-1.5 whitespace-nowrap" onClick={() => autoFitPhoto(frame.id)}>
           Reset
         </button>
       </div>

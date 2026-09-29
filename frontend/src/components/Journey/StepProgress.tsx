@@ -1,5 +1,4 @@
 import { STEPS, useJourneyStore } from '../../state/journeyStore'
-import styles from './StepProgress.module.css'
 
 /**
  * Where the customer is, what they've finished, and a way back to any step
@@ -16,28 +15,41 @@ export function StepProgress() {
   const goToStep = useJourneyStore((s) => s.goToStep)
 
   return (
-    <nav aria-label="Progress" className={styles.nav}>
-      <ol className={styles.list}>
+    <nav aria-label="Progress" className="min-w-0">
+      <ol className="m-0 flex list-none items-center justify-center gap-0 p-0">
         {STEPS.map((step) => {
           const isCurrent = step.id === currentStep
           const isDone = step.id < currentStep || (step.id <= furthestStep && !isCurrent)
           const isLocked = step.id > furthestStep
           return (
-            <li key={step.id} className={styles.item}>
+            <li key={step.id} className="flex items-center">
               <button
                 type="button"
-                className={`${styles.step} ${isCurrent ? styles.current : ''} ${isDone ? styles.done : ''}`}
+                className={`group inline-flex min-h-11 items-center gap-2 border-none bg-none px-1.5 text-[13px] font-semibold tracking-[0.01em] whitespace-nowrap disabled:cursor-default disabled:opacity-55 max-[999px]:min-w-[42px] max-[999px]:justify-center max-[999px]:px-1 ${
+                  isCurrent ? 'text-ink' : isDone ? 'text-ink-2' : 'text-ink-3'
+                }`}
                 aria-current={isCurrent ? 'step' : undefined}
                 disabled={isLocked}
                 onClick={() => goToStep(step.id)}
                 aria-label={`Step ${step.id}: ${step.short}${isDone ? ', completed' : ''}${isLocked ? ', not reached yet' : ''}`}
               >
-                <span className={styles.dot} aria-hidden>
+                <span
+                  aria-hidden
+                  className={`inline-flex h-[26px] w-[26px] items-center justify-center rounded-full border-[1.5px] text-xs font-bold text-inherit transition-[background-color,border-color,color] duration-150 ease-in-out ${
+                    isDone
+                      ? 'border-ink bg-ink text-paper'
+                      : isCurrent
+                        ? 'border-ink bg-paper text-ink shadow-[0_0_0_3px_var(--color-accent-soft)]'
+                        : 'border-line-strong group-[:hover:not(:disabled)]:border-ink bg-transparent'
+                  }`}
+                >
                   {isDone && !isCurrent ? '✓' : step.id}
                 </span>
-                <span className={styles.label}>{step.short}</span>
+                <span className={isCurrent ? '' : 'max-[999px]:hidden'}>{step.short}</span>
               </button>
-              {step.id < STEPS.length && <span className={`${styles.rule} ${step.id < furthestStep ? styles.ruleDone : ''}`} aria-hidden />}
+              {step.id < STEPS.length && (
+                <span aria-hidden className={`h-[1.5px] w-[18px] min-[1000px]:w-7 max-[999px]:hidden ${step.id < furthestStep ? 'bg-ink' : 'bg-line-strong'}`} />
+              )}
             </li>
           )
         })}

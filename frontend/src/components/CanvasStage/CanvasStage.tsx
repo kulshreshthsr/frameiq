@@ -23,7 +23,6 @@ import { QuadHandles, QuadConnectorLines } from './QuadHandles'
 import { WallRegionOverlay } from './WallRegionOverlay'
 import { WallRegionHandles } from './WallRegionHandles'
 import { ZoomControls } from './ZoomControls'
-import styles from './CanvasStage.module.css'
 
 export interface ExportOutcome {
   width: number
@@ -244,7 +243,7 @@ export const CanvasStage = forwardRef<CanvasStageHandle>(function CanvasStage(_p
   const layout = getLayout(activeLayoutId)
 
   return (
-    <div ref={containerRef} className={styles.container}>
+    <div ref={containerRef} className="relative flex h-full w-full items-center justify-center overflow-hidden bg-paper-2">
       <input
         ref={fileInputRef}
         type="file"
@@ -253,7 +252,7 @@ export const CanvasStage = forwardRef<CanvasStageHandle>(function CanvasStage(_p
         aria-label="Choose a photo for this frame"
         onChange={handlePhotoFileChange}
       />
-      <div className={styles.canvasWrap} role="img" aria-label={describeDesign(frames)}>
+      <div className="absolute inset-0" role="img" aria-label={describeDesign(frames)}>
         <Stage
           ref={stageRef}
           width={containerSize.width}
@@ -276,7 +275,7 @@ export const CanvasStage = forwardRef<CanvasStageHandle>(function CanvasStage(_p
           onTouchEnd={() => {
             pinchRef.current = null
           }}
-          className={styles.stage}
+          className="touch-none"
           onMouseDown={(e) => {
             if (e.target === e.target.getStage()) selectFrame(null)
           }}
@@ -338,13 +337,17 @@ export const CanvasStage = forwardRef<CanvasStageHandle>(function CanvasStage(_p
       </div>
 
       {viewMode === 'compare' && !isExportingPreview && (
-        <div className={styles.compareLabels} aria-hidden>
-          <span className={styles.compareLabel}>Before</span>
-          <span className={styles.compareLabel}>After</span>
+        <div className="pointer-events-none absolute top-3 right-3 left-3 flex justify-between" aria-hidden>
+          <span className="rounded-full bg-[rgba(33,28,23,0.72)] px-2.5 py-1 text-xs font-bold tracking-[0.06em] text-white uppercase">Before</span>
+          <span className="rounded-full bg-[rgba(33,28,23,0.72)] px-2.5 py-1 text-xs font-bold tracking-[0.06em] text-white uppercase">After</span>
         </div>
       )}
 
-      {showWallEditor && <div className={styles.canvasHint}>Drag the corners onto your wall</div>}
+      {showWallEditor && (
+        <div className="pointer-events-none absolute top-3 left-1/2 max-w-[calc(100%-24px)] -translate-x-1/2 rounded-full bg-[rgba(33,28,23,0.78)] px-3.5 py-2 text-center text-[13px] font-semibold whitespace-nowrap text-white">
+          Drag the corners onto your wall
+        </div>
+      )}
 
       <ZoomControls
         zoomPercent={zoomPercent}
