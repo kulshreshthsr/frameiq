@@ -15,7 +15,7 @@ export function LayoutDiagram({ layout, size = 96 }: { layout: LayoutDefinition;
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={layout.name}>
-      <rect x={0} y={0} width={size} height={size} rx={8} fill="var(--card)" stroke="var(--line)" />
+      <rect x={0} y={0} width={size} height={size} rx={8} fill="var(--color-card)" stroke="var(--color-line)" />
       {layout.slots.map((slot) => {
         const sw = slot.wPct * w
         const sh = slot.hPct * h
@@ -29,8 +29,8 @@ export function LayoutDiagram({ layout, size = 96 }: { layout: LayoutDefinition;
             width={sw}
             height={sh}
             rx={1.5}
-            fill="var(--paper)"
-            stroke="var(--ink-3)"
+            fill="var(--color-paper)"
+            stroke="var(--color-ink-3)"
             strokeWidth={1.5}
             transform={`translate(${cx} ${cy}) rotate(${slot.rotation ?? 0})`}
           />

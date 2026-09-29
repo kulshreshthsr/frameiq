@@ -1,5 +1,4 @@
-import landing from './landing.module.css'
-import styles from './Faq.module.css'
+import { inner, section, sectionEyebrow, sectionHeadCenter, sectionTitle } from './sectionStyles'
 
 /** Plain <details>/<summary> — accessible and keyboard-operable with no
  * script of its own, matching "everything you tap" from the rest of the app.
@@ -16,26 +15,26 @@ const QA = [
 
 export function Faq() {
   return (
-    <section className={landing.section} aria-labelledby="faq-heading">
-      <div className={landing.inner}>
-        <div className={landing.sectionHeadCenter}>
-          <p className={landing.sectionEyebrow}>Questions</p>
-          <h2 id="faq-heading" className={landing.sectionTitle}>
+    <section id="faq" className={section} aria-labelledby="faq-heading">
+      <div className={inner}>
+        <div className={sectionHeadCenter}>
+          <p className={sectionEyebrow()}>Questions</p>
+          <h2 id="faq-heading" className={sectionTitle()}>
             Good to know
           </h2>
         </div>
-        <div className={styles.list}>
+        <div className="border-line mx-auto max-w-[720px] border-t">
           {QA.map(({ q, a }) => (
-            <details key={q} className={styles.item}>
-              <summary className={styles.question}>
+            <details key={q} className="group border-line border-b">
+              <summary className="flex list-none items-center justify-between gap-4 px-1 py-[18px] font-serif text-[17px] font-medium text-ink [&::-webkit-details-marker]:hidden">
                 {q}
-                <span className={styles.chevron} aria-hidden>
+                <span className="flex flex-none text-ink-3 transition-transform duration-200 ease-in-out group-open:rotate-180">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                     <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </span>
               </summary>
-              <p className={styles.answer}>{a}</p>
+              <p className="max-w-[60ch] px-1 pt-0 pb-5 text-[14.5px] leading-[1.6] text-ink-2">{a}</p>
             </details>
           ))}
         </div>

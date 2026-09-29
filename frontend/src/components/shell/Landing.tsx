@@ -7,7 +7,6 @@ import { LandingFooter } from './landing/LandingFooter'
 import { LayoutsShowcase } from './landing/LayoutsShowcase'
 import { StartSection } from './landing/StartSection'
 import { WhySection } from './landing/WhySection'
-import styles from './Landing.module.css'
 
 // FrameStylesShowcase draws real frames with the same Konva-based renderer
 // the configurator uses (`FrameSwatch`) — genuine, but Konva is the heaviest
@@ -39,7 +38,11 @@ export function Landing({ onScroll }: { onScroll?: (scrollTop: number) => void }
   }, [])
 
   return (
-    <div id="top" className={styles.landing} onScroll={onScroll ? (e) => onScroll(e.currentTarget.scrollTop) : undefined}>
+    <div
+      id="top"
+      className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden [-webkit-overflow-scrolling:touch] motion-safe:scroll-smooth"
+      onScroll={onScroll ? (e) => onScroll(e.currentTarget.scrollTop) : undefined}
+    >
       <Hero />
       <StartSection />
       <HowItWorks />

@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import styles from './HeroIllustration.module.css'
 
 /**
  * The hero's visual argument, made without a single stock photo: an empty
@@ -98,12 +97,12 @@ export function HeroIllustration() {
   // referenced here — two <svg> elements each declaring the same ids would
   // be invalid, duplicate markup.
   const emptyWall = (
-    <svg viewBox="0 0 420 340" className={styles.scene} aria-hidden focusable="false">
+    <svg viewBox="0 0 420 340" className="block h-full w-full" aria-hidden focusable="false">
       {room}
     </svg>
   )
   const styledWall = (
-    <svg viewBox="0 0 420 340" className={styles.scene} aria-hidden focusable="false">
+    <svg viewBox="0 0 420 340" className="block h-full w-full" aria-hidden focusable="false">
       {room}
       {FRAMES.map((f) => (
         <Frame key={f.x} {...f} />
@@ -112,7 +111,7 @@ export function HeroIllustration() {
   )
 
   return (
-    <div className={styles.wrap}>
+    <div className="flex flex-col gap-2.5">
       <svg width="0" height="0" aria-hidden focusable="false">
         <defs>
           <linearGradient id="hero-wall" x1="0" y1="0" x2="0" y2="1">
@@ -140,19 +139,28 @@ export function HeroIllustration() {
           </filter>
         </defs>
       </svg>
-      <div className={styles.track} ref={trackRef}>
-        <div className={styles.layer}>{emptyWall}</div>
-        <div className={styles.layer} style={{ clipPath: `inset(0 0 0 ${100 - reveal}%)` }}>
+      <div
+        ref={trackRef}
+        className="shadow-lift relative aspect-[420/340] w-full touch-pan-y overflow-hidden rounded-2xl [cursor:ew-resize] select-none max-[720px]:rounded-xl"
+      >
+        <div className="absolute inset-0">{emptyWall}</div>
+        <div className="absolute inset-0" style={{ clipPath: `inset(0 0 0 ${100 - reveal}%)` }}>
           {styledWall}
-          <span className={styles.tag} style={{ opacity: reveal > 30 ? 1 : 0 }}>
+          <span
+            className="absolute right-3.5 bottom-3.5 rounded-full bg-[rgba(21,36,58,0.86)] px-3 py-1.5 font-sans text-xs font-bold tracking-[0.02em] text-paper transition-opacity duration-200 ease-in-out pointer-events-none"
+            style={{ opacity: reveal > 30 ? 1 : 0 }}
+          >
             Your wall, designed
           </span>
         </div>
-        <span className={styles.tagBefore} style={{ opacity: reveal < 70 ? 1 : 0 }}>
+        <span
+          className="absolute top-3.5 left-3.5 rounded-full bg-[rgba(255,253,249,0.92)] px-3 py-1.5 font-sans text-xs font-bold tracking-[0.02em] text-ink transition-opacity duration-200 ease-in-out pointer-events-none"
+          style={{ opacity: reveal < 70 ? 1 : 0 }}
+        >
           Your wall, today
         </span>
         <div
-          className={styles.handle}
+          className="group absolute top-0 bottom-0 -ml-5 flex w-10 items-center justify-center touch-none [cursor:ew-resize] [&::before]:absolute [&::before]:top-0 [&::before]:bottom-0 [&::before]:left-1/2 [&::before]:w-0.5 [&::before]:-translate-x-1/2 [&::before]:bg-gold-bright [&::before]:shadow-[0_0_0_1px_rgba(21,36,58,0.3)] [&::before]:content-['']"
           style={{ left: `${100 - reveal}%` }}
           role="slider"
           tabIndex={0}
@@ -170,12 +178,19 @@ export function HeroIllustration() {
             if (e.key === 'ArrowRight') setReveal((r) => Math.min(96, r + 6))
           }}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden
+            className="bg-surface-dark text-on-dark relative h-[34px] w-[34px] rounded-full p-[9px] shadow-[0_0_0_2px_var(--color-gold-bright),0_10px_30px_rgba(33,28,23,0.16)] transition-transform duration-150 ease-in-out group-hover:scale-[1.06] group-focus-visible:[outline:2px_solid_var(--color-gold-bright)] group-focus-visible:[outline-offset:3px]"
+          >
             <path d="M9 6l-6 6 6 6M15 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
       </div>
-      <p className={styles.caption}>Drag to compare — this is the same view you’ll get with your own photo.</p>
+      <p className="text-center text-[13px] text-ink-3">Drag to compare — this is the same view you’ll get with your own photo.</p>
     </div>
   )
 }

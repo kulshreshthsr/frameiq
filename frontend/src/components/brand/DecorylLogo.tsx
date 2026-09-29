@@ -1,5 +1,4 @@
 import { DecorylMark } from './DecorylMark'
-import styles from './DecorylLogo.module.css'
 
 /**
  * The full lockup: mark + wordmark. `variant="dark"` is for placement on a
@@ -8,9 +7,9 @@ import styles from './DecorylLogo.module.css'
  */
 export function DecorylLogo({ variant = 'light', size = 34 }: { variant?: 'light' | 'dark'; size?: number }) {
   return (
-    <span className={`${styles.logo} ${variant === 'dark' ? styles.dark : ''}`}>
-      <DecorylMark size={size} className={styles.mark} />
-      <span className={styles.word}>Decoryl</span>
+    <span className={`inline-flex items-center gap-[9px] ${variant === 'dark' ? 'text-on-dark' : 'text-ink'}`}>
+      <DecorylMark size={size} className="flex-none" />
+      <span className="font-sans text-[19px] font-bold tracking-[0.06em] uppercase whitespace-nowrap text-inherit">Decoryl</span>
     </span>
   )
 }

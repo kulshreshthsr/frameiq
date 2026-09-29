@@ -1,5 +1,4 @@
-import landing from './landing.module.css'
-import styles from './WhySection.module.css'
+import { band, inner, sectionEyebrow, sectionHead, sectionTight, sectionTitle } from './sectionStyles'
 
 /** Only claims the product actually keeps — no reviews or numbers invented
  * to fill the section, since there aren't any to draw from honestly. */
@@ -12,19 +11,19 @@ const POINTS = [
 
 export function WhySection() {
   return (
-    <section className={`${landing.sectionTight} ${landing.band}`} aria-labelledby="why-heading">
-      <div className={landing.inner}>
-        <div className={landing.sectionHead}>
-          <p className={landing.sectionEyebrow}>Why design first</p>
-          <h2 id="why-heading" className={landing.sectionTitle}>
+    <section className={`${sectionTight} ${band}`} aria-labelledby="why-heading">
+      <div className={inner}>
+        <div className={sectionHead}>
+          <p className={sectionEyebrow()}>Why design first</p>
+          <h2 id="why-heading" className={sectionTitle()}>
             You should never have to imagine how it'll look
           </h2>
         </div>
-        <ul className={styles.grid}>
+        <ul className="m-0 grid list-none grid-cols-4 gap-7 p-0 max-[900px]:grid-cols-2 max-[900px]:gap-6 max-[520px]:grid-cols-1">
           {POINTS.map((point) => (
-            <li key={point.title} className={styles.item}>
-              <h3 className={styles.title}>{point.title}</h3>
-              <p className={styles.body}>{point.body}</p>
+            <li key={point.title} className="flex flex-col gap-2">
+              <h3 className="font-serif text-[17px] font-medium text-ink">{point.title}</h3>
+              <p className="text-sm leading-[1.55] text-ink-2">{point.body}</p>
             </li>
           ))}
         </ul>

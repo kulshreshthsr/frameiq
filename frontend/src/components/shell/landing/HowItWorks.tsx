@@ -1,5 +1,4 @@
-import landing from './landing.module.css'
-import styles from './HowItWorks.module.css'
+import { inner, section, sectionEyebrow, sectionHeadCenter, sectionTitle } from './sectionStyles'
 
 const STEPS = [
   {
@@ -48,21 +47,21 @@ const STEPS = [
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className={landing.section} aria-labelledby="how-heading">
-      <div className={landing.inner}>
-        <div className={landing.sectionHeadCenter}>
-          <p className={landing.sectionEyebrow}>How it works</p>
-          <h2 id="how-heading" className={landing.sectionTitle}>
+    <section id="how-it-works" className={section} aria-labelledby="how-heading">
+      <div className={inner}>
+        <div className={sectionHeadCenter}>
+          <p className={sectionEyebrow()}>How it works</p>
+          <h2 id="how-heading" className={sectionTitle()}>
             From an empty wall to an order, in four honest steps
           </h2>
         </div>
-        <ol className={styles.grid}>
+        <ol className="m-0 grid list-none grid-cols-4 gap-8 p-0 max-[900px]:grid-cols-2 max-[900px]:gap-7 max-[520px]:grid-cols-1 max-[520px]:gap-6">
           {STEPS.map((step, i) => (
-            <li key={step.title} className={styles.step}>
-              <span className={styles.number}>{String(i + 1).padStart(2, '0')}</span>
-              <span className={styles.icon}>{step.icon}</span>
-              <h3 className={styles.stepTitle}>{step.title}</h3>
-              <p className={styles.stepBody}>{step.body}</p>
+            <li key={step.title} className="border-line-strong relative flex flex-col gap-2.5 border-t pt-2">
+              <span className="font-serif text-[13px] text-ink-3">{String(i + 1).padStart(2, '0')}</span>
+              <span className="mt-1.5 mb-0.5 flex h-10 w-10 items-center justify-center text-accent [&_svg]:h-[30px] [&_svg]:w-[30px]">{step.icon}</span>
+              <h3 className="font-serif text-lg font-medium text-ink">{step.title}</h3>
+              <p className="text-[14.5px] leading-[1.55] text-ink-2">{step.body}</p>
             </li>
           ))}
         </ol>
